@@ -1,0 +1,13 @@
+name: Test
+
+on:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    containers: ruby:3.3
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run build and tests
+        run: rake build test
