@@ -112,8 +112,7 @@ yyjson_mut_val *mrb_value_to_json_value(mrb_state *mrb, yyjson_mut_doc *doc, mrb
         }
         break;
     default:
-        mrb_value inspect = mrb_inspect(mrb, val);
-        result = yyjson_mut_str(doc, mrb_str_to_cstr(mrb, inspect));
+        result = yyjson_mut_str(doc, mrb_str_to_cstr(mrb, mrb_funcall(mrb, val, "to_s", 0)));
         break;
     }
 

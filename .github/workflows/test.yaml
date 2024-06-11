@@ -1,0 +1,18 @@
+name: Test
+
+on:
+  pull_request:
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        runs-on: [ubuntu-latest, macos-14, windows-latest]
+    runs-on: ${{ matrix.runs-on }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.3
+      - name: Run build and tests
+        run: rake all test
