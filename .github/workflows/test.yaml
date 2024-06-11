@@ -6,8 +6,10 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    containers: ruby:3.3
     steps:
       - uses: actions/checkout@v4
+      - use: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.3
       - name: Run build and tests
         run: rake build test
