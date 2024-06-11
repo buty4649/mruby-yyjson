@@ -12,4 +12,4 @@ jobs:
         with:
           ruby-version: 3.3
       - name: Run build and tests
-        run: rake build test
+        run: rake all test
