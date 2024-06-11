@@ -112,8 +112,7 @@ yyjson_mut_val *mrb_value_to_json_value(mrb_state *mrb, yyjson_mut_doc *doc, mrb
         }
         break;
     default:
-        mrb_value to_s = mrb_funcall(mrb, val, "to_s", 0);
-        result = yyjson_mut_str(doc, mrb_str_to_cstr(mrb, to_s));
+        result = yyjson_mut_str(doc, mrb_str_to_cstr(mrb, mrb_funcall(mrb, val, "to_s", 0)));
         break;
     }
 
