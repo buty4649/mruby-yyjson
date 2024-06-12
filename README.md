@@ -16,27 +16,29 @@ end
 
 ## Implemented Method
 
-| Method                | mruby-yyjson | Memo     |
-|-----------------------|--------------|----------|
-| JSON.[]               |              |          |
-| JSON.create_id        |              |          |
-| JSON.create_id=       |              |          |
-| JSON.generator        |              |          |
-| JSON.parser           |              |          |
-| JSON.state            |              |          |
-| JSON.#dump            |              |          |
-| JSON.#fast_generate   |              |          |
-| JSON.#fast_unparse    |              | obsolete |
-| JSON.#generate        | ✓            |          |
-| JSON.#unparse         |              | obsolete |
-| JSON.#load            | ✓            |          |
-| JSON.#restore         |              |          |
-| JSON.#parse           | ✓            |          |
-| JSON.#parse!          |              |          |
-| JSON.#pretty_generate | ✓            |          |
-| JSON.#pretty_unparse  |              | obsolete |
+| Method                | mruby-yyjson | Memo               |
+|-----------------------|--------------|--------------------|
+| JSON.[]               |              |                    |
+| JSON.create_id        |              |                    |
+| JSON.create_id=       |              |                    |
+| JSON.generator        |              |                    |
+| JSON.parser           |              |                    |
+| JSON.state            |              |                    |
+| JSON.#dump            |              |                    |
+| JSON.#fast_generate   |              |                    |
+| JSON.#fast_unparse    |              | obsolete           |
+| JSON.#generate        | ✓            |                    |
+| JSON.#unparse         |              | obsolete           |
+| JSON.#load            | ✓            |                    |
+| JSON.#load_file       | ✓            | require `mruby-io` |
+| JSON.#load_file!      |              |                    |
+| JSON.#restore         |              |                    |
+| JSON.#parse           | ✓            |                    |
+| JSON.#parse!          |              |                    |
+| JSON.#pretty_generate | ✓            |                    |
+| JSON.#pretty_unparse  |              | obsolete           |
 ||||
-| Object#to_json       | ✓            |          |
+| Object#to_json       | ✓            |                     |
 
 ## License
 
