@@ -72,6 +72,12 @@ assert('JSON.#load') do
   assert_equal "TestReader#read", JSON.load(TestIOWrapper.new(TestReader.new))
 end
 
+assert('JSON.#load_file') do
+  skip unless Object.const_defined?(:File)
+
+  assert_equal ({"mruby" => "yyjson"}), JSON.load_file("test/fixtures/test.json")
+end
+
 assert('JSON.#pretty_generate') do
   assert_equal <<~JSON.chomp, JSON.pretty_generate({"mrb" => "yyjson", foo:%w[bar baz qux]})
     {

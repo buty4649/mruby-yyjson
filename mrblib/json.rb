@@ -10,4 +10,10 @@ module JSON
 
     parse(obj)
   end
+
+  if Object.const_defined?(:File)
+    def self.load_file(filename)
+      JSON.parse(File.read(filename))
+    end
+  end
 end
