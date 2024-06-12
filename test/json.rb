@@ -1,3 +1,17 @@
+assert('JSON.#[]') do
+  assert_equal({"mruby" => "yyjson"}, JSON[%({"mruby":"yyjson"})])
+  assert_equal({mruby: "yyjson"}, JSON[%({"mruby":"yyjson"}), symbolize_names: true])
+
+  class TestStringLike
+    def to_str
+      %("TestStringLike#to_str")
+    end
+  end
+  assert_equal "TestStringLike#to_str", JSON[TestStringLike.new]
+
+  assert_equal %({"mruby":"yyjson"}), JSON[{"mruby" => "yyjson"}]
+end
+
 assert('JSON.#dump') do
   assert_equal "null", JSON.dump(nil)
   assert_equal "false", JSON.dump(false)
