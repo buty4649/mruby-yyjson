@@ -11,6 +11,11 @@ assert('JSON.#generate') do
   assert_equal %("🍣"), JSON.generate("🍣")
   assert_equal %([true,1,"mrb-yyjson"]), JSON.generate([true, 1, "mrb-yyjson"])
   assert_equal %({"mrb":"yyjson","foo":123,"JSON":"json"}), JSON.generate({"mrb" => "yyjson", foo: 123, JSON:"json"})
+
+  assert_raise(JSON::NestingError) do
+    a = %w[a b c]; b = a; a[1] = b
+    JSON.generate(a)
+  end
 end
 
 assert('JSON.#parse') do
