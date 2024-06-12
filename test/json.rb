@@ -19,11 +19,11 @@ assert('JSON.#dump') do
   assert_equal "100", JSON.dump(100)
   assert_equal "-100", JSON.dump(-100)
   assert_equal "0.25", JSON.dump(0.25)
-  assert_equal %("mrb-yyjson"), JSON.dump("mrb-yyjson")
+  assert_equal %("mruby-yyjson"), JSON.dump("mruby-yyjson")
   assert_equal %("JSON"), JSON.dump(:JSON)
   assert_equal %("JSON"), JSON.dump(JSON)
   assert_equal %("🍣"), JSON.dump("🍣")
-  assert_equal %([true,1,"mrb-yyjson"]), JSON.dump([true, 1, "mrb-yyjson"])
+  assert_equal %([true,1,"mruby-yyjson"]), JSON.dump([true, 1, "mruby-yyjson"])
   assert_equal %({"mruby":"yyjson","foo":123,"JSON":"json"}), JSON.dump({"mruby" => "yyjson", foo: 123, JSON:"json"})
 
   class TestWriter
@@ -45,11 +45,11 @@ assert('JSON.#generate') do
   assert_equal "100", JSON.generate(100)
   assert_equal "-100", JSON.generate(-100)
   assert_equal "0.25", JSON.generate(0.25)
-  assert_equal %("mrb-yyjson"), JSON.generate("mrb-yyjson")
+  assert_equal %("mruby-yyjson"), JSON.generate("mruby-yyjson")
   assert_equal %("JSON"), JSON.generate(:JSON)
   assert_equal %("JSON"), JSON.generate(JSON)
   assert_equal %("🍣"), JSON.generate("🍣")
-  assert_equal %([true,1,"mrb-yyjson"]), JSON.generate([true, 1, "mrb-yyjson"])
+  assert_equal %([true,1,"mruby-yyjson"]), JSON.generate([true, 1, "mruby-yyjson"])
   assert_equal %({"mruby":"yyjson","foo":123,"JSON":"json"}), JSON.generate({"mruby" => "yyjson", foo: 123, JSON:"json"})
 
   assert_raise(JSON::NestingError) do
@@ -65,10 +65,10 @@ assert('JSON.#parse') do
   assert_equal 100, JSON.parse("100")
   assert_equal (-100), JSON.parse("-100")
   assert_equal 0.25, JSON.parse("0.25")
-  assert_equal "mrb-yyjson", JSON.parse(%("mrb-yyjson"))
+  assert_equal "mruby-yyjson", JSON.parse(%("mruby-yyjson"))
   assert_equal "JSON", JSON.parse(%("JSON"))
   assert_equal "🍣", JSON.parse(%("🍣"))
-  assert_equal [true, 1, "mrb-yyjson"], JSON.parse(%([true,1,"mrb-yyjson"]))
+  assert_equal [true, 1, "mruby-yyjson"], JSON.parse(%([true,1,"mruby-yyjson"]))
   assert_equal({"mruby" => "yyjson"}, JSON.parse(%({"mruby":"yyjson"})))
 
   assert_equal({mruby: "yyjson"}, JSON.parse(%({"mruby":"yyjson"}), symbolize_names: true))
@@ -83,10 +83,10 @@ assert('JSON.#load') do
   assert_equal 100, JSON.load("100")
   assert_equal (-100), JSON.load("-100")
   assert_equal 0.25, JSON.load("0.25")
-  assert_equal "mrb-yyjson", JSON.load(%("mrb-yyjson"))
+  assert_equal "mruby-yyjson", JSON.load(%("mruby-yyjson"))
   assert_equal "JSON", JSON.load(%("JSON"))
   assert_equal "🍣", JSON.load(%("🍣"))
-  assert_equal [true, 1, "mrb-yyjson"], JSON.load(%([true,1,"mrb-yyjson"]))
+  assert_equal [true, 1, "mruby-yyjson"], JSON.load(%([true,1,"mruby-yyjson"]))
   assert_equal({"mruby" => "yyjson"}, JSON.load(%({"mruby":"yyjson"})))
 
   assert_equal({mruby: "yyjson"}, JSON.load(%({"mruby":"yyjson"}), symbolize_names: true))
