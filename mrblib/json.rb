@@ -1,6 +1,18 @@
 module JSON
   class NestingError < StandardError; end
 
+  def self.dump(obj, io = nil)
+    if io && !io.respond_to?(:write)
+      raise TypeError, "io must respond to `write'"
+    end
+
+    json = generate(obj)
+    return json unless io
+
+    io.write(json)
+    io
+  end
+
   def self.load(obj, opts = {})
     unless obj.is_a?(String)
       return load(obj.to_str) if obj.respond_to?(:to_str)
