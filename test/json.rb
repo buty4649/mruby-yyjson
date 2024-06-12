@@ -26,3 +26,16 @@ assert('JSON.#parse') do
   assert_equal [true, 1, "mrb-yyjson"], JSON.parse(%([true,1,"mrb-yyjson"]))
   assert_equal({"mrb" => "yyjson"}, JSON.parse(%({"mrb":"yyjson"})))
 end
+
+assert('JSON.#pretty_generate') do
+  assert_equal <<~JSON.chomp, JSON.pretty_generate({"mrb" => "yyjson", foo:%w[bar baz qux]})
+    {
+      "mrb": "yyjson",
+      "foo": [
+        "bar",
+        "baz",
+        "qux"
+      ]
+    }
+  JSON
+end
