@@ -4,6 +4,10 @@
 #include <mruby/string.h>
 #include "yyjson.h"
 
+#ifndef MRB_YYJSON_MAx_NESTING
+#define MRB_YYJSON_MAx_NESTING 100
+#endif
+
 mrb_value mrb_json_value_to_mrb_value(mrb_state *mrb, yyjson_val *val)
 {
     mrb_value result;
@@ -63,8 +67,15 @@ mrb_value mrb_json_value_to_mrb_value(mrb_state *mrb, yyjson_val *val)
     return result;
 }
 
-yyjson_mut_val *mrb_value_to_json_value(mrb_state *mrb, yyjson_mut_doc *doc, mrb_value val)
+yyjson_mut_val *mrb_value_to_json_value(mrb_state *mrb, yyjson_mut_doc *doc, mrb_value val, int depth)
 {
+    if (depth > MRB_YYJSON_MAx_NESTING)
+    {
+        struct RClass *json_mod = mrb_module_get(mrb, "JSON");
+        struct RClass *nesting_error = mrb_class_get_under(mrb, json_mod, "NestingError");
+        mrb_raisef(mrb, nesting_error, "nesting of %d is too deep", MRB_YYJSON_MAx_NESTING);
+    }
+
     if (mrb_nil_p(val))
     {
         return yyjson_mut_null(doc);
@@ -94,7 +105,7 @@ yyjson_mut_val *mrb_value_to_json_value(mrb_state *mrb, yyjson_mut_doc *doc, mrb
         for (size_t i = 0; i < arr_len; i++)
         {
             mrb_value v = mrb_ary_ref(mrb, val, i);
-            yyjson_mut_val *json_v = mrb_value_to_json_value(mrb, doc, v);
+            yyjson_mut_val *json_v = mrb_value_to_json_value(mrb, doc, v, depth + 1);
             yyjson_mut_arr_append(result, json_v);
         }
         break;
@@ -106,8 +117,8 @@ yyjson_mut_val *mrb_value_to_json_value(mrb_state *mrb, yyjson_mut_doc *doc, mrb
         {
             mrb_value key = mrb_ary_ref(mrb, keys, i);
             mrb_value v = mrb_hash_get(mrb, val, key);
-            yyjson_mut_val *json_k = mrb_value_to_json_value(mrb, doc, key);
-            yyjson_mut_val *json_v = mrb_value_to_json_value(mrb, doc, v);
+            yyjson_mut_val *json_k = mrb_value_to_json_value(mrb, doc, key, depth + 1);
+            yyjson_mut_val *json_v = mrb_value_to_json_value(mrb, doc, v, depth + 1);
             yyjson_mut_obj_add(result, json_k, json_v);
         }
         break;
@@ -125,7 +136,7 @@ mrb_value mrb_yyjson_generate(mrb_state *mrb, mrb_value self)
     mrb_get_args(mrb, "o", &obj);
 
     yyjson_mut_doc *doc = yyjson_mut_doc_new(NULL);
-    yyjson_mut_val *root = mrb_value_to_json_value(mrb, doc, obj);
+    yyjson_mut_val *root = mrb_value_to_json_value(mrb, doc, obj, 0);
     yyjson_mut_doc_set_root(doc, root);
 
     mrb_value result = mrb_str_new_cstr(mrb, yyjson_mut_write(doc, 0, NULL));
@@ -160,7 +171,7 @@ mrb_value mrb_yyjson_pretty_generate(mrb_state *mrb, mrb_value self)
     mrb_get_args(mrb, "o", &obj);
 
     yyjson_mut_doc *doc = yyjson_mut_doc_new(NULL);
-    yyjson_mut_val *root = mrb_value_to_json_value(mrb, doc, obj);
+    yyjson_mut_val *root = mrb_value_to_json_value(mrb, doc, obj, 0);
     yyjson_mut_doc_set_root(doc, root);
 
     mrb_value result = mrb_str_new_cstr(mrb, yyjson_mut_write(doc, YYJSON_WRITE_PRETTY_TWO_SPACES, NULL));
