@@ -1,5 +1,6 @@
 module JSON
   class NestingError < StandardError; end
+  class ParserError < StandardError; end
 
   def self.dump(obj, io = nil)
     if io && !io.respond_to?(:write)
