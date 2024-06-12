@@ -154,11 +154,27 @@ mrb_value mrb_yyjson_parse(mrb_state *mrb, mrb_value self)
     return result;
 }
 
+mrb_value mrb_yyjson_pretty_generate(mrb_state *mrb, mrb_value self)
+{
+    mrb_value obj;
+    mrb_get_args(mrb, "o", &obj);
+
+    yyjson_mut_doc *doc = yyjson_mut_doc_new(NULL);
+    yyjson_mut_val *root = mrb_value_to_json_value(mrb, doc, obj);
+    yyjson_mut_doc_set_root(doc, root);
+
+    mrb_value result = mrb_str_new_cstr(mrb, yyjson_mut_write(doc, YYJSON_WRITE_PRETTY_TWO_SPACES, NULL));
+    yyjson_mut_doc_free(doc);
+
+    return result;
+}
+
 void mrb_mruby_yyjson_gem_init(mrb_state *mrb)
 {
     struct RClass *json_mod = mrb_define_module(mrb, "JSON");
     mrb_define_class_method(mrb, json_mod, "generate", mrb_yyjson_generate, MRB_ARGS_REQ(1));
     mrb_define_class_method(mrb, json_mod, "parse", mrb_yyjson_parse, MRB_ARGS_REQ(1));
+    mrb_define_class_method(mrb, json_mod, "pretty_generate", mrb_yyjson_pretty_generate, MRB_ARGS_REQ(1));
 }
 
 void mrb_mruby_yyjson_gem_final(mrb_state *mrb)
