@@ -8,65 +8,6 @@
 #define MRB_YYJSON_MAx_NESTING 100
 #endif
 
-mrb_value mrb_json_value_to_mrb_value(mrb_state *mrb, yyjson_val *val)
-{
-    mrb_value result;
-
-    switch (yyjson_get_type(val))
-    {
-    case YYJSON_TYPE_NULL:
-        result = mrb_nil_value();
-        break;
-    case YYJSON_TYPE_BOOL:
-        result = yyjson_is_true(val) ? mrb_true_value() : mrb_false_value();
-        break;
-    case YYJSON_TYPE_NUM:
-        if (yyjson_is_uint(val))
-        {
-            result = mrb_fixnum_value(yyjson_get_uint(val));
-        }
-        else if (yyjson_is_sint(val))
-        {
-            result = mrb_fixnum_value(yyjson_get_sint(val));
-        }
-        else
-        {
-            result = mrb_float_value(mrb, yyjson_get_real(val));
-        }
-        break;
-    case YYJSON_TYPE_STR:
-        result = mrb_str_new_cstr(mrb, yyjson_get_str(val));
-        break;
-    case YYJSON_TYPE_ARR:
-        result = mrb_ary_new_capa(mrb, yyjson_arr_size(val));
-
-        yyjson_val *v;
-        yyjson_arr_iter ai = yyjson_arr_iter_with(val);
-        while ((v = yyjson_arr_iter_next(&ai)))
-        {
-            mrb_ary_push(mrb, result, mrb_json_value_to_mrb_value(mrb, v));
-        }
-        break;
-    case YYJSON_TYPE_OBJ:
-        result = mrb_hash_new_capa(mrb, yyjson_obj_size(val));
-
-        yyjson_val *key;
-        yyjson_obj_iter oi = yyjson_obj_iter_with(val);
-        while ((key = yyjson_obj_iter_next(&oi)))
-        {
-            yyjson_val *v = yyjson_obj_iter_get_val(key);
-
-            mrb_value k = mrb_json_value_to_mrb_value(mrb, key);
-            mrb_hash_set(mrb, result, k, mrb_json_value_to_mrb_value(mrb, v));
-        }
-        break;
-    default:
-        mrb_raise(mrb, E_NOTIMP_ERROR, "not implemented");
-        break;
-    }
-    return result;
-}
-
 yyjson_mut_val *mrb_value_to_json_value(mrb_state *mrb, yyjson_mut_doc *doc, mrb_value val, int depth)
 {
     if (depth > MRB_YYJSON_MAx_NESTING)
@@ -130,19 +71,82 @@ yyjson_mut_val *mrb_value_to_json_value(mrb_state *mrb, yyjson_mut_doc *doc, mrb
     return result;
 }
 
+mrb_value mrb_value_to_json_string(mrb_state *mrb, mrb_value obj, yyjson_write_flag flag)
+{
+    yyjson_mut_doc *doc = yyjson_mut_doc_new(NULL);
+    yyjson_mut_val *root = mrb_value_to_json_value(mrb, doc, obj, 0);
+    yyjson_mut_doc_set_root(doc, root);
+    mrb_value result = mrb_str_new_cstr(mrb, yyjson_mut_write(doc, flag, NULL));
+    yyjson_mut_doc_free(doc);
+
+    return result;
+}
+
+mrb_value mrb_json_value_to_mrb_value(mrb_state *mrb, yyjson_val *val)
+{
+    mrb_value result;
+
+    switch (yyjson_get_type(val))
+    {
+    case YYJSON_TYPE_NULL:
+        result = mrb_nil_value();
+        break;
+    case YYJSON_TYPE_BOOL:
+        result = yyjson_is_true(val) ? mrb_true_value() : mrb_false_value();
+        break;
+    case YYJSON_TYPE_NUM:
+        if (yyjson_is_uint(val))
+        {
+            result = mrb_fixnum_value(yyjson_get_uint(val));
+        }
+        else if (yyjson_is_sint(val))
+        {
+            result = mrb_fixnum_value(yyjson_get_sint(val));
+        }
+        else
+        {
+            result = mrb_float_value(mrb, yyjson_get_real(val));
+        }
+        break;
+    case YYJSON_TYPE_STR:
+        result = mrb_str_new_cstr(mrb, yyjson_get_str(val));
+        break;
+    case YYJSON_TYPE_ARR:
+        result = mrb_ary_new_capa(mrb, yyjson_arr_size(val));
+
+        yyjson_val *v;
+        yyjson_arr_iter ai = yyjson_arr_iter_with(val);
+        while ((v = yyjson_arr_iter_next(&ai)))
+        {
+            mrb_ary_push(mrb, result, mrb_json_value_to_mrb_value(mrb, v));
+        }
+        break;
+    case YYJSON_TYPE_OBJ:
+        result = mrb_hash_new_capa(mrb, yyjson_obj_size(val));
+
+        yyjson_val *key;
+        yyjson_obj_iter oi = yyjson_obj_iter_with(val);
+        while ((key = yyjson_obj_iter_next(&oi)))
+        {
+            yyjson_val *v = yyjson_obj_iter_get_val(key);
+
+            mrb_value k = mrb_json_value_to_mrb_value(mrb, key);
+            mrb_hash_set(mrb, result, k, mrb_json_value_to_mrb_value(mrb, v));
+        }
+        break;
+    default:
+        mrb_raise(mrb, E_NOTIMP_ERROR, "not implemented");
+        break;
+    }
+    return result;
+}
+
 mrb_value mrb_yyjson_generate(mrb_state *mrb, mrb_value self)
 {
     mrb_value obj;
     mrb_get_args(mrb, "o", &obj);
 
-    yyjson_mut_doc *doc = yyjson_mut_doc_new(NULL);
-    yyjson_mut_val *root = mrb_value_to_json_value(mrb, doc, obj, 0);
-    yyjson_mut_doc_set_root(doc, root);
-
-    mrb_value result = mrb_str_new_cstr(mrb, yyjson_mut_write(doc, 0, NULL));
-    yyjson_mut_doc_free(doc);
-
-    return result;
+    return mrb_value_to_json_string(mrb, obj, YYJSON_WRITE_NOFLAG);
 }
 
 mrb_value mrb_yyjson_parse(mrb_state *mrb, mrb_value self)
@@ -170,14 +174,7 @@ mrb_value mrb_yyjson_pretty_generate(mrb_state *mrb, mrb_value self)
     mrb_value obj;
     mrb_get_args(mrb, "o", &obj);
 
-    yyjson_mut_doc *doc = yyjson_mut_doc_new(NULL);
-    yyjson_mut_val *root = mrb_value_to_json_value(mrb, doc, obj, 0);
-    yyjson_mut_doc_set_root(doc, root);
-
-    mrb_value result = mrb_str_new_cstr(mrb, yyjson_mut_write(doc, YYJSON_WRITE_PRETTY_TWO_SPACES, NULL));
-    yyjson_mut_doc_free(doc);
-
-    return result;
+    return mrb_value_to_json_string(mrb, obj, YYJSON_WRITE_PRETTY_TWO_SPACES);
 }
 
 void mrb_mruby_yyjson_gem_init(mrb_state *mrb)
