@@ -72,6 +72,8 @@ assert('JSON.#parse') do
   assert_equal({"mruby" => "yyjson"}, JSON.parse(%({"mruby":"yyjson"})))
 
   assert_equal({mruby: "yyjson"}, JSON.parse(%({"mruby":"yyjson"}), symbolize_names: true))
+
+  assert_raise(JSON::ParserError) { JSON.parse(%({"mruby":)) }
 end
 
 assert('JSON.#load') do
@@ -88,6 +90,8 @@ assert('JSON.#load') do
   assert_equal({"mruby" => "yyjson"}, JSON.load(%({"mruby":"yyjson"})))
 
   assert_equal({mruby: "yyjson"}, JSON.load(%({"mruby":"yyjson"}), symbolize_names: true))
+
+  assert_raise(JSON::ParserError) { JSON.load(%({"mruby":)) }
 
   class TestStringLike
     def to_str

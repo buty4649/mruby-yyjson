@@ -1,5 +1,6 @@
 module JSON
   class NestingError < StandardError; end
+  class ParserError < StandardError; end
 
   def self.[](obj, opts = {})
     if obj.respond_to?(:to_str)

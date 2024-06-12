@@ -12,13 +12,14 @@ typedef uint8_t parse_opts;
 #define PARSE_OPTS_NONE 0
 #define PARSE_OPTS_SYMBOLIZE_NAMES 1
 
+#define E_NESTING_ERROR mrb_class_get_under(mrb, mrb_module_get(mrb, "JSON"), "NestingError")
+#define E_PARSER_ERROR mrb_class_get_under(mrb, mrb_module_get(mrb, "JSON"), "ParserError")
+
 yyjson_mut_val *mrb_value_to_json_value(mrb_state *mrb, yyjson_mut_doc *doc, mrb_value val, int depth)
 {
     if (depth > MRB_YYJSON_MAx_NESTING)
     {
-        struct RClass *json_mod = mrb_module_get(mrb, "JSON");
-        struct RClass *nesting_error = mrb_class_get_under(mrb, json_mod, "NestingError");
-        mrb_raisef(mrb, nesting_error, "nesting of %d is too deep", MRB_YYJSON_MAx_NESTING);
+        mrb_raisef(mrb, E_NESTING_ERROR, "nesting of %d is too deep", MRB_YYJSON_MAx_NESTING);
     }
 
     if (mrb_nil_p(val))
@@ -175,7 +176,7 @@ mrb_value mrb_yyjson_parse(mrb_state *mrb, mrb_value self)
     yyjson_doc *doc = yyjson_read_opts(source, strlen(source), 0, NULL, &err);
     if (doc == NULL)
     {
-        mrb_raisef(mrb, E_RUNTIME_ERROR, "failed to parse JSON: %s", err.msg);
+        mrb_raisef(mrb, E_PARSER_ERROR, "failed to parse JSON: %s position: %d", err.msg, err.pos);
     }
 
     yyjson_val *root = yyjson_doc_get_root(doc);
