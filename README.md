@@ -24,7 +24,7 @@ end
 | JSON.generator        |              |                    |
 | JSON.parser           |              |                    |
 | JSON.state            |              |                    |
-| JSON.#dump            |              |                    |
+| JSON.#dump            | ✓            |                    |
 | JSON.#fast_generate   |              |                    |
 | JSON.#fast_unparse    |              | obsolete           |
 | JSON.#generate        | ✓            |                    |
