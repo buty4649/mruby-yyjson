@@ -29,7 +29,7 @@ end
 | JSON.#fast_unparse   |              | obsolete |
 | JSON.#generate       | ✓            |          |
 | JSON.#unparse        |              | obsolete |
-| JSON.#load           |              |          |
+| JSON.#load           | ✓            |          |
 | JSON.#restore        |              |          |
 | JSON.#parse          | ✓            |          |
 | JSON.#parse!         |              |          |
