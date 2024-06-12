@@ -33,7 +33,7 @@ end
 | JSON.#restore        |              |          |
 | JSON.#parse          | ✓            |          |
 | JSON.#parse!         |              |          |
-| JSON.#pretty_generate|              |          |
+| JSON.#pretty_generate| ✓            |          |
 | JSON.#pretty_unparse |              | obsolete |
 
 ## License
