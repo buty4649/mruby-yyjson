@@ -1,19 +1,19 @@
 module JSON
   class NestingError < StandardError; end
 
-  def self.load(obj)
+  def self.load(obj, opts = {})
     unless obj.is_a?(String)
       return load(obj.to_str) if obj.respond_to?(:to_str)
       return load(obj.read) if obj.respond_to?(:read)
       return load(obj.to_io) if obj.respond_to?(:to_io)
     end
 
-    parse(obj)
+    parse(obj, opts)
   end
 
   if Object.const_defined?(:File)
-    def self.load_file(filename)
-      JSON.parse(File.read(filename))
+    def self.load_file(filename, opts = {})
+      JSON.parse(File.read(filename), opts)
     end
   end
 end

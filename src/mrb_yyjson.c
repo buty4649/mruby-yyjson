@@ -8,6 +8,10 @@
 #define MRB_YYJSON_MAx_NESTING 100
 #endif
 
+typedef uint8_t parse_opts;
+#define PARSE_OPTS_NONE 0
+#define PARSE_OPTS_SYMBOLIZE_NAMES 1
+
 yyjson_mut_val *mrb_value_to_json_value(mrb_state *mrb, yyjson_mut_doc *doc, mrb_value val, int depth)
 {
     if (depth > MRB_YYJSON_MAx_NESTING)
@@ -82,7 +86,7 @@ mrb_value mrb_value_to_json_string(mrb_state *mrb, mrb_value obj, yyjson_write_f
     return result;
 }
 
-mrb_value mrb_json_value_to_mrb_value(mrb_state *mrb, yyjson_val *val)
+mrb_value mrb_json_value_to_mrb_value(mrb_state *mrb, yyjson_val *val, parse_opts opts)
 {
     mrb_value result;
 
@@ -118,7 +122,7 @@ mrb_value mrb_json_value_to_mrb_value(mrb_state *mrb, yyjson_val *val)
         yyjson_arr_iter ai = yyjson_arr_iter_with(val);
         while ((v = yyjson_arr_iter_next(&ai)))
         {
-            mrb_ary_push(mrb, result, mrb_json_value_to_mrb_value(mrb, v));
+            mrb_ary_push(mrb, result, mrb_json_value_to_mrb_value(mrb, v, opts));
         }
         break;
     case YYJSON_TYPE_OBJ:
@@ -130,8 +134,9 @@ mrb_value mrb_json_value_to_mrb_value(mrb_state *mrb, yyjson_val *val)
         {
             yyjson_val *v = yyjson_obj_iter_get_val(key);
 
-            mrb_value k = mrb_json_value_to_mrb_value(mrb, key);
-            mrb_hash_set(mrb, result, k, mrb_json_value_to_mrb_value(mrb, v));
+            const char *key_str = yyjson_get_str(key);
+            mrb_value k = opts & PARSE_OPTS_SYMBOLIZE_NAMES ? mrb_symbol_value(mrb_intern_cstr(mrb, key_str)) : mrb_str_new_cstr(mrb, key_str);
+            mrb_hash_set(mrb, result, k, mrb_json_value_to_mrb_value(mrb, v, opts));
         }
         break;
     default:
@@ -152,8 +157,19 @@ mrb_value mrb_yyjson_generate(mrb_state *mrb, mrb_value self)
 mrb_value mrb_yyjson_parse(mrb_state *mrb, mrb_value self)
 {
     char *source;
+    mrb_value opts;
+    parse_opts parse_opts = PARSE_OPTS_NONE;
 
-    mrb_get_args(mrb, "z", &source);
+    mrb_get_args(mrb, "z|H", &source, &opts);
+
+    if (mrb_type(opts) == MRB_TT_HASH)
+    {
+        mrb_value symbolize_names = mrb_hash_get(mrb, opts, mrb_symbol_value(mrb_intern_cstr(mrb, "symbolize_names")));
+        if (mrb_test(symbolize_names))
+        {
+            parse_opts |= PARSE_OPTS_SYMBOLIZE_NAMES;
+        }
+    }
 
     yyjson_read_err err;
     yyjson_doc *doc = yyjson_read_opts(source, strlen(source), 0, NULL, &err);
@@ -163,7 +179,7 @@ mrb_value mrb_yyjson_parse(mrb_state *mrb, mrb_value self)
     }
 
     yyjson_val *root = yyjson_doc_get_root(doc);
-    mrb_value result = mrb_json_value_to_mrb_value(mrb, root);
+    mrb_value result = mrb_json_value_to_mrb_value(mrb, root, parse_opts);
 
     yyjson_doc_free(doc);
     return result;
@@ -181,7 +197,7 @@ void mrb_mruby_yyjson_gem_init(mrb_state *mrb)
 {
     struct RClass *json_mod = mrb_define_module(mrb, "JSON");
     mrb_define_class_method(mrb, json_mod, "generate", mrb_yyjson_generate, MRB_ARGS_REQ(1));
-    mrb_define_class_method(mrb, json_mod, "parse", mrb_yyjson_parse, MRB_ARGS_REQ(1));
+    mrb_define_class_method(mrb, json_mod, "parse", mrb_yyjson_parse, MRB_ARGS_REQ(1) | MRB_ARGS_OPT(1));
     mrb_define_class_method(mrb, json_mod, "pretty_generate", mrb_yyjson_pretty_generate, MRB_ARGS_REQ(1));
 }
 

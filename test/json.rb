@@ -30,6 +30,8 @@ assert('JSON.#parse') do
   assert_equal "🍣", JSON.parse(%("🍣"))
   assert_equal [true, 1, "mrb-yyjson"], JSON.parse(%([true,1,"mrb-yyjson"]))
   assert_equal({"mrb" => "yyjson"}, JSON.parse(%({"mrb":"yyjson"})))
+
+  assert_equal({mruby: "yyjson"}, JSON.parse(%({"mruby":"yyjson"}), symbolize_names: true))
 end
 
 assert('JSON.#load') do
@@ -44,6 +46,8 @@ assert('JSON.#load') do
   assert_equal "🍣", JSON.load(%("🍣"))
   assert_equal [true, 1, "mrb-yyjson"], JSON.load(%([true,1,"mrb-yyjson"]))
   assert_equal({"mrb" => "yyjson"}, JSON.load(%({"mrb":"yyjson"})))
+
+  assert_equal({mruby: "yyjson"}, JSON.load(%({"mruby":"yyjson"}), symbolize_names: true))
 
   class TestStringLike
     def to_str
@@ -75,7 +79,8 @@ end
 assert('JSON.#load_file') do
   skip unless Object.const_defined?(:File)
 
-  assert_equal ({"mruby" => "yyjson"}), JSON.load_file("test/fixtures/test.json")
+  assert_equal({"mruby" => "yyjson"}, JSON.load_file("test/fixtures/test.json"))
+  assert_equal({mruby: "yyjson"}, JSON.load_file("test/fixtures/test.json", symbolize_names: true))
 end
 
 assert('JSON.#pretty_generate') do
