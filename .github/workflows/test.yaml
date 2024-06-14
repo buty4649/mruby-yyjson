@@ -16,3 +16,9 @@ jobs:
           ruby-version: 3.3
       - name: Run build and tests
         run: rake all test
+
+      - name: Memory Leak Check
+        if: matrix.runs-on == 'ubuntu-latest'
+        run: |
+          sudo apt-get update && sudo apt-get install -y valgrind
+          valgrind --leak-check=full --error-exitcode=1 ./build/host/bin/mrbtest
