@@ -20,5 +20,5 @@ jobs:
       - name: Memory Leak Check
         if: matrix.runs-on == 'ubuntu-latest'
         run: |
-          apt-get update && apt-get install -y valgrind
+          sudo apt-get update && sudo apt-get install -y valgrind
           valgrind --leak-check=full --error-exitcode=1 ./build/host/bin/mrbtest
