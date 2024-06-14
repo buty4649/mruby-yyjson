@@ -4,8 +4,8 @@
 #include <mruby/string.h>
 #include "yyjson.h"
 
-#ifndef MRB_YYJSON_MAx_NESTING
-#define MRB_YYJSON_MAx_NESTING 100
+#ifndef MRB_YYJSON_MAX_NESTING
+#define MRB_YYJSON_MAX_NESTING 100
 #endif
 
 typedef uint8_t parse_opts;
@@ -15,11 +15,33 @@ typedef uint8_t parse_opts;
 #define E_NESTING_ERROR mrb_class_get_under(mrb, mrb_module_get(mrb, "JSON"), "NestingError")
 #define E_PARSER_ERROR mrb_class_get_under(mrb, mrb_module_get(mrb, "JSON"), "ParserError")
 
+static void *yyjson_mrb_malloc(void *ctx, size_t size)
+{
+    return mrb_malloc((mrb_state *)ctx, size);
+}
+
+static void *yyjson_mrb_realloc(void *ctx, void *ptr, size_t old_size, size_t size)
+{
+    return mrb_realloc((mrb_state *)ctx, ptr, size);
+}
+
+static void yyjson_mrb_free(void *ctx, void *ptr)
+{
+    mrb_free((mrb_state *)ctx, ptr);
+}
+
+static yyjson_alc alc = {
+    yyjson_mrb_malloc,
+    yyjson_mrb_realloc,
+    yyjson_mrb_free,
+    NULL // set mrb_state* in mrb_mruby_yyjson_gem_init
+};
+
 yyjson_mut_val *mrb_value_to_json_value(mrb_state *mrb, yyjson_mut_doc *doc, mrb_value val, int depth)
 {
-    if (depth > MRB_YYJSON_MAx_NESTING)
+    if (depth > MRB_YYJSON_MAX_NESTING)
     {
-        mrb_raisef(mrb, E_NESTING_ERROR, "nesting of %d is too deep", MRB_YYJSON_MAx_NESTING);
+        return NULL;
     }
 
     if (mrb_nil_p(val))
@@ -52,6 +74,11 @@ yyjson_mut_val *mrb_value_to_json_value(mrb_state *mrb, yyjson_mut_doc *doc, mrb
         {
             mrb_value v = mrb_ary_ref(mrb, val, i);
             yyjson_mut_val *json_v = mrb_value_to_json_value(mrb, doc, v, depth + 1);
+            if (json_v == NULL)
+            {
+                return NULL;
+            }
+
             yyjson_mut_arr_append(result, json_v);
         }
         break;
@@ -64,7 +91,17 @@ yyjson_mut_val *mrb_value_to_json_value(mrb_state *mrb, yyjson_mut_doc *doc, mrb
             mrb_value key = mrb_ary_ref(mrb, keys, i);
             mrb_value v = mrb_hash_get(mrb, val, key);
             yyjson_mut_val *json_k = mrb_value_to_json_value(mrb, doc, key, depth + 1);
+            if (json_k == NULL)
+            {
+                return NULL;
+            }
+
             yyjson_mut_val *json_v = mrb_value_to_json_value(mrb, doc, v, depth + 1);
+            if (json_v == NULL)
+            {
+                return NULL;
+            }
+
             yyjson_mut_obj_add(result, json_k, json_v);
         }
         break;
@@ -78,11 +115,25 @@ yyjson_mut_val *mrb_value_to_json_value(mrb_state *mrb, yyjson_mut_doc *doc, mrb
 
 mrb_value mrb_value_to_json_string(mrb_state *mrb, mrb_value obj, yyjson_write_flag flag)
 {
-    yyjson_mut_doc *doc = yyjson_mut_doc_new(NULL);
+    yyjson_mut_doc *doc = yyjson_mut_doc_new(&alc);
     yyjson_mut_val *root = mrb_value_to_json_value(mrb, doc, obj, 0);
+    if (root == NULL)
+    {
+        yyjson_mut_doc_free(doc);
+        mrb_raisef(mrb, E_NESTING_ERROR, "nesting of %d is too deep", MRB_YYJSON_MAX_NESTING);
+    }
     yyjson_mut_doc_set_root(doc, root);
-    mrb_value result = mrb_str_new_cstr(mrb, yyjson_mut_write(doc, flag, NULL));
+
+    yyjson_write_err err;
+    char *json = yyjson_mut_write_opts(doc, flag, &alc, NULL, &err);
     yyjson_mut_doc_free(doc);
+    if (json == NULL)
+    {
+        mrb_raisef(mrb, E_PARSER_ERROR, "failed to generate JSON: %s", err.msg);
+    }
+
+    mrb_value result = mrb_str_new_cstr(mrb, json);
+    alc.free(alc.ctx, json);
 
     return result;
 }
@@ -158,7 +209,7 @@ mrb_value mrb_yyjson_generate(mrb_state *mrb, mrb_value self)
 mrb_value mrb_yyjson_parse(mrb_state *mrb, mrb_value self)
 {
     char *source;
-    mrb_value opts;
+    mrb_value opts = mrb_nil_value();
     parse_opts parse_opts = PARSE_OPTS_NONE;
 
     mrb_get_args(mrb, "z|H", &source, &opts);
@@ -200,6 +251,8 @@ void mrb_mruby_yyjson_gem_init(mrb_state *mrb)
     mrb_define_class_method(mrb, json_mod, "generate", mrb_yyjson_generate, MRB_ARGS_REQ(1));
     mrb_define_class_method(mrb, json_mod, "parse", mrb_yyjson_parse, MRB_ARGS_REQ(1) | MRB_ARGS_OPT(1));
     mrb_define_class_method(mrb, json_mod, "pretty_generate", mrb_yyjson_pretty_generate, MRB_ARGS_REQ(1));
+
+    alc.ctx = (void *)mrb;
 }
 
 void mrb_mruby_yyjson_gem_final(mrb_state *mrb)
