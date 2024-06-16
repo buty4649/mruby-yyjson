@@ -246,6 +246,10 @@ mrb_value mrb_yyjson_generate_internal(mrb_state *mrb, yyjson_write_flag flag)
         if (mrb_type(n) == MRB_TT_FIXNUM)
         {
             max_nesting = mrb_fixnum(n);
+            if (max_nesting < 0)
+            {
+                mrb_raise(mrb, E_ARGUMENT_ERROR, "max_nesting must be greater than or equal to 0");
+            }
         }
         else
         {
