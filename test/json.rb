@@ -18,13 +18,20 @@ assert('JSON.#dump') do
   assert_equal "true", JSON.dump(true)
   assert_equal "100", JSON.dump(100)
   assert_equal "-100", JSON.dump(-100)
-  assert_equal "0.25", JSON.dump(0.25)
+  assert_equal "0.1", JSON.dump(0.1)
+  assert_raise(JSON::GeneratorError) { JSON.dump(Float::NAN) }
+  assert_raise(JSON::GeneratorError) { JSON.dump(Float::INFINITY) }
   assert_equal %("mruby-yyjson"), JSON.dump("mruby-yyjson")
   assert_equal %("JSON"), JSON.dump(:JSON)
   assert_equal %("JSON"), JSON.dump(JSON)
   assert_equal %("🍣"), JSON.dump("🍣")
   assert_equal %([true,1,"mruby-yyjson"]), JSON.dump([true, 1, "mruby-yyjson"])
   assert_equal %({"mruby":"yyjson","foo":123,"JSON":"json"}), JSON.dump({"mruby" => "yyjson", foo: 123, JSON:"json"})
+
+  assert_raise(JSON::NestingError) do
+    a = %w[a b c]; b = a; a[1] = b
+    JSON.generate(a)
+  end
 
   class TestWriter
     def write(obj)
@@ -44,7 +51,9 @@ assert('JSON.#generate') do
   assert_equal "true", JSON.generate(true)
   assert_equal "100", JSON.generate(100)
   assert_equal "-100", JSON.generate(-100)
-  assert_equal "0.25", JSON.generate(0.25)
+  assert_equal "0.1", JSON.generate(0.1)
+  assert_raise(JSON::GeneratorError) { JSON.dump(Float::NAN) }
+  assert_raise(JSON::GeneratorError) { JSON.dump(Float::INFINITY) }
   assert_equal %("mruby-yyjson"), JSON.generate("mruby-yyjson")
   assert_equal %("JSON"), JSON.generate(:JSON)
   assert_equal %("JSON"), JSON.generate(JSON)
@@ -64,7 +73,7 @@ assert('JSON.#parse') do
   assert_equal true, JSON.parse("true")
   assert_equal 100, JSON.parse("100")
   assert_equal (-100), JSON.parse("-100")
-  assert_equal 0.25, JSON.parse("0.25")
+  assert_equal 0.1, JSON.parse("0.1")
   assert_equal "mruby-yyjson", JSON.parse(%("mruby-yyjson"))
   assert_equal "JSON", JSON.parse(%("JSON"))
   assert_equal "🍣", JSON.parse(%("🍣"))
@@ -82,7 +91,7 @@ assert('JSON.#load') do
   assert_equal true, JSON.load("true")
   assert_equal 100, JSON.load("100")
   assert_equal (-100), JSON.load("-100")
-  assert_equal 0.25, JSON.load("0.25")
+  assert_equal 0.1, JSON.load("0.1")
   assert_equal "mruby-yyjson", JSON.load(%("mruby-yyjson"))
   assert_equal "JSON", JSON.load(%("JSON"))
   assert_equal "🍣", JSON.load(%("🍣"))
