@@ -1,4 +1,5 @@
 module JSON
+  class GeneratorError < StandardError; end
   class NestingError < StandardError; end
   class ParserError < StandardError; end
 
