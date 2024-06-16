@@ -23,6 +23,10 @@ module JSON
     io
   end
 
+  def self.fast_generate(obj)
+    generate(obj)
+  end
+
   def self.load(obj, opts = {})
     unless obj.is_a?(String)
       return load(obj.to_str) if obj.respond_to?(:to_str)

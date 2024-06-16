@@ -3,6 +3,7 @@
 #include <mruby/error.h>
 #include <mruby/hash.h>
 #include <mruby/string.h>
+#include <mruby/presym.h>
 #include "yyjson.h"
 
 #define MRB_YYJSON_GENERATOR_DEFAULT_MAX_NESTING 19
@@ -297,10 +298,10 @@ mrb_value mrb_yyjson_parse(mrb_state *mrb, mrb_value self)
 
 void mrb_mruby_yyjson_gem_init(mrb_state *mrb)
 {
-    struct RClass *json_mod = mrb_define_module(mrb, "JSON");
-    mrb_define_class_method(mrb, json_mod, "generate", mrb_yyjson_generate, MRB_ARGS_REQ(1) | MRB_ARGS_OPT(1));
-    mrb_define_class_method(mrb, json_mod, "parse", mrb_yyjson_parse, MRB_ARGS_REQ(1) | MRB_ARGS_OPT(1));
-    mrb_define_class_method(mrb, json_mod, "pretty_generate", mrb_yyjson_pretty_generate, MRB_ARGS_REQ(1) | MRB_ARGS_OPT(1));
+    struct RClass *json_mod = mrb_define_module_id(mrb, MRB_SYM(JSON));
+    mrb_define_module_function_id(mrb, json_mod, MRB_SYM(generate), mrb_yyjson_generate, MRB_ARGS_REQ(1) | MRB_ARGS_OPT(1));
+    mrb_define_module_function_id(mrb, json_mod, MRB_SYM(parse), mrb_yyjson_parse, MRB_ARGS_REQ(1) | MRB_ARGS_OPT(1));
+    mrb_define_module_function_id(mrb, json_mod, MRB_SYM(pretty_generate), mrb_yyjson_pretty_generate, MRB_ARGS_REQ(1) | MRB_ARGS_OPT(1));
 
     alc.ctx = (void *)mrb;
 }
