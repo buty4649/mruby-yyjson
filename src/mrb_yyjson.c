@@ -234,7 +234,8 @@ mrb_value mrb_json_value_to_mrb_value(mrb_state *mrb, yyjson_val *val, parse_opt
 mrb_value mrb_yyjson_generate_internal(mrb_state *mrb, yyjson_write_flag flag)
 {
     int max_nesting = MRB_YYJSON_GENERATOR_DEFAULT_MAX_NESTING;
-    mrb_value obj, opts;
+    mrb_value obj;
+    mrb_value opts = mrb_nil_value();
     mrb_get_args(mrb, "o|H", &obj, &opts);
 
     if (mrb_type(opts) == MRB_TT_HASH)
