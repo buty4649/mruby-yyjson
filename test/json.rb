@@ -13,26 +13,6 @@ assert('JSON.#[]') do
 end
 
 assert('JSON.#dump') do
-  assert_equal "null", JSON.dump(nil)
-  assert_equal "false", JSON.dump(false)
-  assert_equal "true", JSON.dump(true)
-  assert_equal "100", JSON.dump(100)
-  assert_equal "-100", JSON.dump(-100)
-  assert_equal "0.1", JSON.dump(0.1)
-  assert_raise(JSON::GeneratorError) { JSON.dump(Float::NAN) }
-  assert_raise(JSON::GeneratorError) { JSON.dump(Float::INFINITY) }
-  assert_equal %("mruby-yyjson"), JSON.dump("mruby-yyjson")
-  assert_equal %("JSON"), JSON.dump(:JSON)
-  assert_equal %("JSON"), JSON.dump(JSON)
-  assert_equal %("🍣"), JSON.dump("🍣")
-  assert_equal %([true,1,"mruby-yyjson"]), JSON.dump([true, 1, "mruby-yyjson"])
-  assert_equal %({"mruby":"yyjson","foo":123,"JSON":"json"}), JSON.dump({"mruby" => "yyjson", foo: 123, JSON:"json"})
-
-  assert_raise(JSON::NestingError) do
-    a = %w[a b c]; b = a; a[1] = b
-    JSON.generate(a)
-  end
-
   class TestWriter
     def write(obj)
       obj
@@ -52,8 +32,8 @@ assert('JSON.#generate') do
   assert_equal "100", JSON.generate(100)
   assert_equal "-100", JSON.generate(-100)
   assert_equal "0.1", JSON.generate(0.1)
-  assert_raise(JSON::GeneratorError) { JSON.dump(Float::NAN) }
-  assert_raise(JSON::GeneratorError) { JSON.dump(Float::INFINITY) }
+  assert_raise(JSON::GeneratorError) { JSON.generate(Float::NAN) }
+  assert_raise(JSON::GeneratorError) { JSON.generate(Float::INFINITY) }
   assert_equal %("mruby-yyjson"), JSON.generate("mruby-yyjson")
   assert_equal %("JSON"), JSON.generate(:JSON)
   assert_equal %("JSON"), JSON.generate(JSON)
@@ -61,9 +41,23 @@ assert('JSON.#generate') do
   assert_equal %([true,1,"mruby-yyjson"]), JSON.generate([true, 1, "mruby-yyjson"])
   assert_equal %({"mruby":"yyjson","foo":123,"JSON":"json"}), JSON.generate({"mruby" => "yyjson", foo: 123, JSON:"json"})
 
+  def nesting_array(n)
+    return [] if n == 0
+    [nesting_array(n-1)]
+  end
+
+  # default max_nesting is 19
   assert_raise(JSON::NestingError) do
-    a = %w[a b c]; b = a; a[1] = b
-    JSON.generate(a)
+    JSON.generate(nesting_array(20))
+  end
+
+  # 0 is unlimited
+  assert_raise(JSON::NestingError) do
+    JSON.generate(nesting_array(100))
+  end
+
+  assert_raise(JSON::NestingError) do
+    JSON.generate(nesting_array(10), max_nesting: 9)
   end
 end
 
