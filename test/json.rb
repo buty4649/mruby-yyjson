@@ -12,6 +12,12 @@ assert('JSON.#[]') do
   assert_equal %({"mruby":"yyjson"}), JSON[{"mruby" => "yyjson"}]
 end
 
+assert('JSON.#fast_generate') do
+  JSON.stub(:generate, "stub generate") do
+    assert_equal "stub generate", JSON.fast_generate({mruby: "yyjson"})
+  end
+end
+
 assert('JSON.#dump') do
   class TestWriter
     def write(obj)
