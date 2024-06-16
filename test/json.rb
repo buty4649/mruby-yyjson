@@ -65,6 +65,9 @@ assert('JSON.#generate') do
   assert_raise(JSON::NestingError) do
     JSON.generate(nesting_array(10), max_nesting: 9)
   end
+
+  assert_raise(ArgumentError) { JSON.generate("mruby-yyjson", max_nesting: -1) }
+  assert_raise(TypeError) { JSON.generate("mruby-yyjson", max_nesting: true) }
 end
 
 assert('JSON.#parse') do

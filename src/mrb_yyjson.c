@@ -12,9 +12,10 @@ typedef uint8_t parse_opts;
 #define PARSE_OPTS_NONE 0
 #define PARSE_OPTS_SYMBOLIZE_NAMES 1
 
-#define E_GENERATOR_ERROR mrb_class_get_under(mrb, mrb_module_get(mrb, "JSON"), "GeneratorError")
-#define E_NESTING_ERROR mrb_class_get_under(mrb, mrb_module_get(mrb, "JSON"), "NestingError")
-#define E_PARSER_ERROR mrb_class_get_under(mrb, mrb_module_get(mrb, "JSON"), "ParserError")
+#define mrb_yyjson_error(x) mrb_class_get_under_id(mrb, mrb_module_get_id(mrb, MRB_SYM(JSON)), MRB_SYM(x))
+#define E_GENERATOR_ERROR mrb_yyjson_error(GeneratorError)
+#define E_NESTING_ERROR mrb_yyjson_error(NestingError)
+#define E_PARSER_ERROR mrb_yyjson_error(ParserError)
 
 #define mrb_float_is_nan(x) (mrb_float_p(x) && mrb_test(mrb_funcall(mrb, x, "nan?", 0)))
 #define mrb_float_is_infinite(x) (mrb_float_p(x) && mrb_test(mrb_funcall(mrb, x, "infinite?", 0)))
@@ -245,6 +246,10 @@ mrb_value mrb_yyjson_generate_internal(mrb_state *mrb, yyjson_write_flag flag)
         if (mrb_type(n) == MRB_TT_FIXNUM)
         {
             max_nesting = mrb_fixnum(n);
+            if (max_nesting < 0)
+            {
+                mrb_raise(mrb, E_ARGUMENT_ERROR, "max_nesting must be greater than or equal to 0");
+            }
         }
         else
         {
