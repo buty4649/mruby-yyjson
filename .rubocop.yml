@@ -1,0 +1,12 @@
+Lint/ConstantDefinitionInBlock:
+  Exclude:
+    - 'test/**/*'
+
+Style/Documentation:
+  Enabled: false
+
+Style/FrozenStringLiteralComment:
+  Enabled: false
+
+Style/NumericPredicate:
+ Enabled: false

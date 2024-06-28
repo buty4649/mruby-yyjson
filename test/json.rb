@@ -58,9 +58,7 @@ assert('JSON.#generate') do
   end
 
   # 0 is unlimited
-  assert_raise(JSON::NestingError) do
-    JSON.generate(nesting_array(100))
-  end
+  assert_nothing_raised { JSON.generate(nesting_array(100), max_nesting: 0) }
 
   assert_raise(JSON::NestingError) do
     JSON.generate(nesting_array(10), max_nesting: 9)
