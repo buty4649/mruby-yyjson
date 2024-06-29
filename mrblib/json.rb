@@ -1,5 +1,4 @@
 module JSON
-  class GeneratorError < StandardError; end
   class NestingError < StandardError; end
   class ParserError < StandardError; end
 
@@ -12,15 +11,21 @@ module JSON
   end
 
   def self.dump(obj, io = nil)
-    if io && !io.respond_to?(:write)
-      raise TypeError, "io must respond to `write'"
-    end
+    raise TypeError, "io must respond to `write'" if io && !io.respond_to?(:write)
 
     json = generate(obj)
     return json unless io
 
     io.write(json)
     io
+  end
+
+  def self.generate(obj, opts = {})
+    JSON::Generator.new(opts).generate(obj)
+  end
+
+  def self.pretty_generate(obj)
+    JSON::Generator.new(pretty_print: true).generate(obj)
   end
 
   def self.fast_generate(obj)

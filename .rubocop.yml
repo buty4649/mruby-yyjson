@@ -1,0 +1,25 @@
+AllCops:
+  NewCops: disable
+  Exclude:
+    - ./build/**/*
+    - ./mruby/**/*
+
+Lint/ConstantDefinitionInBlock:
+  Exclude:
+    - 'test/**/*'
+
+Style/Documentation:
+  Enabled: false
+
+Style/FrozenStringLiteralComment:
+  Enabled: false
+
+Style/NumericPredicate:
+ Enabled: false
+
+Security/JSONLoad:
+  Enabled: false
+
+Metrics/BlockLength:
+  Exclude:
+    - 'test/**/*'

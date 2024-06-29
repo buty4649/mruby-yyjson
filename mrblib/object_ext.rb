@@ -1,5 +1,5 @@
 class Object
-  def to_json
-    JSON.generate(self)
+  def to_json(opts = {})
+    JSON.generate(self, opts)
   end
 end
