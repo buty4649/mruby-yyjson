@@ -48,10 +48,10 @@ assert('JSON.#generate') do
   assert_equal %({"mruby":"yyjson","foo":123,"JSON":"json"}),
                JSON.generate({ 'mruby' => 'yyjson', foo: 123, JSON: 'json' })
 
-  def nesting_array(n)
-    return [] if n == 0
+  def nesting_array(count)
+    return [] if count == 0
 
-    [nesting_array(n - 1)]
+    [nesting_array(count - 1)]
   end
 
   # default max_nesting is 19

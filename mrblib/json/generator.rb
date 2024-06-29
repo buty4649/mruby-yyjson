@@ -50,28 +50,27 @@ module JSON
         escape(obj.to_s)
       when Array
         @depth += 1
-        val = obj.map do |o|
-          json = obj_to_json(o)
-          pretty_print ? indent(json, @depth) : json
+        json = obj.map do |o|
+          v = obj_to_json(o)
+          pretty_print ? indent(v, @depth) : v
         end.join(@pretty_print ? ",\n" : ',')
         @depth -= 1
 
         if pretty_print
           [
             indent('[', @depth),
-            val,
+            json,
             indent(']', @depth)
           ].join("\n")
         else
-          %([#{val}])
+          %([#{json}])
         end
       when Hash
         @depth += 1
-        val = obj.map do |key, val|
+        json = obj.map do |key, val|
           k = obj_to_json(key)
           v = obj_to_json(val)
           if pretty_print
-            # When val is an Array, the leading indentation is unnecessary.
             v = deindent(v)
             indent("#{k}: #{v}", @depth)
           else
@@ -83,11 +82,11 @@ module JSON
         if pretty_print
           [
             indent('{', @depth),
-            val,
+            json,
             indent('}', @depth)
           ].join("\n")
         else
-          %({#{val}})
+          %({#{json}})
         end
       else
         obj_to_json(obj.to_s)
