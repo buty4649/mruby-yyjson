@@ -126,3 +126,16 @@ assert('JSON.#pretty_generate') do
     }
   JSON
 end
+
+assert('JSON.#colorize_generate') do
+  assert_equal <<~JSON.chomp, JSON.colorize_generate({ 'mruby' => 'yyjson', foo: [nil, true, 100] })
+    {
+      \e[34m"mruby"\e[m: \e[32m"yyjson"\e[m,
+      \e[34m"foo"\e[m: [
+        \e[90mnull\e[m,
+        true,
+        100
+      ]
+    }
+  JSON
+end
