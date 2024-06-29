@@ -52,3 +52,25 @@ assert('JSON::Generator.colorize') do
   assert_equal "\e[31mmruby-yyjson\e[m", JSON::Generator.colorize('mruby-yyjson', :red)
   assert_equal 'mruby-yyjson', JSON::Generator.colorize('mruby-yyjson', :unknown)
 end
+
+assert('JSON::Generator#escape') do
+  g = JSON::Generator.new
+
+  assert_equal '"\\n"', g.escape("\n"), 'Escape newline character'
+  assert_equal '"\\r"', g.escape("\r"), 'Escape carriage return character'
+  assert_equal '"\\t"', g.escape("\t"), 'Escape tab character'
+  assert_equal '"\\f"', g.escape("\f"), 'Escape form feed character'
+  assert_equal '"\\b"', g.escape("\b"), 'Escape backspace character'
+  assert_equal '"\""', g.escape('"'), 'Escape double quote character'
+  assert_equal '"\\\"', g.escape('\\'), 'Escape backslash character'
+  assert_equal "\"\\'\"", g.escape("'"), 'Escape single quote character'
+  assert_equal '"\\u0000"', g.escape("\u0000"), 'Escape null character'
+  assert_equal '"\\u001f"', g.escape("\u001f"), 'Escape unit separator character'
+  assert_equal '"A"', g.escape('A'), 'Escape printable character'
+  assert_equal '"Hello, World!"', g.escape('Hello, World!'), 'Escape string with printable characters'
+  assert_equal '"Hello\\nWorld\\t\\u0001"', g.escape("Hello\nWorld\t\u0001"), 'Escape mixed characters'
+  assert_equal '"\"Quoted\""', g.escape('"Quoted"'), 'Escape string with double quotes'
+  assert_equal '"\\u0007"', g.escape("\a"), 'Escape bell character'
+  assert_equal '"\\u000b"', g.escape("\v"), 'Escape vertical tab character'
+  assert_equal '"\\u000e"', g.escape("\u000e"), 'Escape shift out character'
+end

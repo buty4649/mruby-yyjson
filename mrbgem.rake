@@ -5,6 +5,8 @@ MRuby::Gem::Specification.new('mruby-yyjson') do |spec|
   spec.description = 'yyjson bindings for mruby'
   spec.version = '1.2.0'
 
+  spec.add_dependency 'mruby-string-ext', core: 'mruby-string-ext'
+
   spec.add_test_dependency 'mruby-io', core: 'mruby-io'
   spec.add_test_dependency 'mruby-test-stub', github: 'buty4649/mruby-test-stub', branch: 'main'
 
