@@ -138,8 +138,26 @@ module JSON
       str[s..]
     end
 
-    def escape(str)
-      "\"#{str}\""
+    def escape(str) # rubocop:disable Metrics/CyclomaticComplexity, Metrics/MethodLength
+      escaped = str.chars.map do |c|
+        case c
+        when "\n" then '\n'
+        when "\r" then '\r'
+        when "\t" then '\t'
+        when "\f" then '\f'
+        when "\b" then '\b'
+        when '"' then '\"'
+        when '\\' then '\\\\'
+        when "'" then "\\'"
+        else
+          if c.ord < 0x20
+            "\\u#{c.ord.to_s(16).rjust(4, '0')}"
+          else
+            c
+          end
+        end
+      end.join
+      "\"#{escaped}\""
     end
 
     def maybe_colorize(str, color)
