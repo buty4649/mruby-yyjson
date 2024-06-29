@@ -24,7 +24,7 @@ module JSON
       obj_to_json(obj)
     end
 
-    def obj_to_json(obj)
+    def obj_to_json(obj) # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity, Metrics/MethodLength
       raise NestingError, "nesting of #{@depth} is too deep" if max_nesting > 0 && @depth > max_nesting
 
       case obj
