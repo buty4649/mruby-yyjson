@@ -5,12 +5,48 @@ module JSON
     DEFAULT_MAX_NESTING = 19
     INDENT_WIDTH = 2
 
-    attr_reader :max_nesting, :pretty_print
+    class << self
+      ANSI_COLORS = {
+        black: 30,
+        red: 31,
+        green: 32,
+        yellow: 33,
+        blue: 34,
+        magenta: 35,
+        cyan: 36,
+        white: 37,
+        gray: 90
+      }
+      attr_writer :color_object_key, :color_string, :color_null
+
+      def color_object_key
+        @color_object_key ||= :blue
+      end
+
+      def color_string
+        @color_string ||= :green
+      end
+
+      def color_null
+        @color_null ||= :gray
+      end
+
+      def colorize(str, color)
+        color_code = ANSI_COLORS[color.to_sym]
+        return str unless color_code
+
+        "\e[#{color_code}m#{str}\e[m"
+      end
+    end
+
+    attr_reader :max_nesting, :pretty_print, :colorize
+    alias colorize? colorize
 
     def initialize(opts = {})
       @depth = 0
       @max_nesting = opts[:max_nesting] || DEFAULT_MAX_NESTING
       @pretty_print = opts[:pretty_print] || false
+      @colorize = opts[:colorize] || false
       validate
     end
 
@@ -29,7 +65,7 @@ module JSON
 
       case obj
       when NilClass
-        'null'
+        maybe_colorize('null', Generator.color_null)
       when TrueClass
         'true'
       when FalseClass
@@ -45,9 +81,9 @@ module JSON
 
         obj.to_s
       when String
-        escape(obj)
+        maybe_colorize(escape(obj), Generator.color_string)
       when Symbol
-        escape(obj.to_s)
+        maybe_colorize(escape(obj.to_s), Generator.color_string)
       when Array
         @depth += 1
         json = obj.map do |o|
@@ -68,7 +104,7 @@ module JSON
       when Hash
         @depth += 1
         json = obj.map do |key, val|
-          k = obj_to_json(key)
+          k = maybe_colorize(monochrome { obj_to_json(key) }, Generator.color_object_key)
           v = obj_to_json(val)
           if pretty_print
             indent("#{k}: #{deindent(v)}", @depth)
@@ -104,6 +140,20 @@ module JSON
 
     def escape(str)
       "\"#{str}\""
+    end
+
+    def maybe_colorize(str, color)
+      return str unless colorize?
+
+      Generator.colorize(str, color)
+    end
+
+    def monochrome
+      old_colorize = @colorize
+      @colorize = false
+      yield
+    ensure
+      @colorize = old_colorize
     end
   end
 end

@@ -23,3 +23,6 @@ Security/JSONLoad:
 Metrics/BlockLength:
   Exclude:
     - 'test/**/*'
+
+Metrics/ClassLength:
+  Max: 200

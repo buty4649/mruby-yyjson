@@ -1,4 +1,4 @@
-assert('JSON::Generator') do
+assert('JSON::Generator#generate') do
   def nesting_array(count)
     return [] if count == 0
 
@@ -46,4 +46,9 @@ assert('JSON::Generator') do
       JSON::Generator.new(max_nesting: true).generate(nesting_array(10))
     end
   end
+end
+
+assert('JSON::Generator.colorize') do
+  assert_equal "\e[31mmruby-yyjson\e[m", JSON::Generator.colorize('mruby-yyjson', :red)
+  assert_equal 'mruby-yyjson', JSON::Generator.colorize('mruby-yyjson', :unknown)
 end
