@@ -29,7 +29,7 @@ module JSON
   end
 
   def self.colorize_generate(obj)
-    generate(obj, pretty_print:true, colorize: true)
+    generate(obj, pretty_print: true, colorize: true)
   end
 
   def self.fast_generate(obj)

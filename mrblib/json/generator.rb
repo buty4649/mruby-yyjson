@@ -16,7 +16,7 @@ module JSON
         cyan: 36,
         white: 37,
         gray: 90
-      }
+      }.freeze
       attr_writer :color_object_key, :color_string, :color_null
 
       def color_object_key
