@@ -52,7 +52,7 @@ module JSON
         @depth += 1
         json = obj.map do |o|
           v = obj_to_json(o)
-          pretty_print ? indent(v, @depth) : v
+          pretty_print ? indent(deindent(v), @depth) : v
         end.join(@pretty_print ? ",\n" : ',')
         @depth -= 1
 
@@ -71,8 +71,7 @@ module JSON
           k = obj_to_json(key)
           v = obj_to_json(val)
           if pretty_print
-            v = deindent(v)
-            indent("#{k}: #{v}", @depth)
+            indent("#{k}: #{deindent(v)}", @depth)
           else
             "#{k}:#{v}"
           end

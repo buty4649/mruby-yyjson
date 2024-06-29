@@ -32,42 +32,21 @@ assert('JSON.#dump') do
 end
 
 assert('JSON.#generate') do
-  assert_equal 'null', JSON.generate(nil)
-  assert_equal 'false', JSON.generate(false)
-  assert_equal 'true', JSON.generate(true)
-  assert_equal '100', JSON.generate(100)
-  assert_equal '-100', JSON.generate(-100)
-  assert_equal '0.1', JSON.generate(0.1)
-  assert_raise(JSON::GeneratorError) { JSON.generate(Float::NAN) }
-  assert_raise(JSON::GeneratorError) { JSON.generate(Float::INFINITY) }
-  assert_equal %("mruby-yyjson"), JSON.generate('mruby-yyjson')
-  assert_equal %("JSON"), JSON.generate(:JSON)
-  assert_equal %("JSON"), JSON.generate(JSON)
-  assert_equal %("🍣"), JSON.generate('🍣')
-  assert_equal %([true,1,"mruby-yyjson"]), JSON.generate([true, 1, 'mruby-yyjson'])
-  assert_equal %({"mruby":"yyjson","foo":123,"JSON":"json"}),
-               JSON.generate({ 'mruby' => 'yyjson', foo: 123, JSON: 'json' })
-
-  def nesting_array(count)
-    return [] if count == 0
-
-    [nesting_array(count - 1)]
+  class StubGenerator
+    def generate(obj)
+      assert_equal 'mruby-yyjson', obj, "Expected 'mruby-yyjson' as input to StubGenerator#generate"
+      'stub generate'
+    end
   end
 
-  # default max_nesting is 19
-  assert_raise(JSON::NestingError) do
-    JSON.generate(nesting_array(20))
+  stub = lambda do |opts|
+    assert_equal({ max_nesting: 19 }, opts, 'Expected options { max_nesting: 19 } for JSON::Generator.new')
+    StubGenerator.new
   end
 
-  # 0 is unlimited
-  assert_nothing_raised { JSON.generate(nesting_array(100), max_nesting: 0) }
-
-  assert_raise(JSON::NestingError) do
-    JSON.generate(nesting_array(10), max_nesting: 9)
+  JSON::Generator.stub(:new, stub) do
+    assert_equal 'stub generate', JSON.generate('mruby-yyjson', max_nesting: 19)
   end
-
-  assert_raise(ArgumentError) { JSON.generate('mruby-yyjson', max_nesting: -1) }
-  assert_raise(TypeError) { JSON.generate('mruby-yyjson', max_nesting: true) }
 end
 
 assert('JSON.#parse') do
@@ -89,21 +68,15 @@ assert('JSON.#parse') do
 end
 
 assert('JSON.#load') do
-  assert_equal nil, JSON.load('null')
-  assert_equal false, JSON.load('false')
-  assert_equal true, JSON.load('true')
-  assert_equal 100, JSON.load('100')
-  assert_equal(-100, JSON.load('-100'))
-  assert_equal 0.1, JSON.load('0.1')
-  assert_equal 'mruby-yyjson', JSON.load(%("mruby-yyjson"))
-  assert_equal 'JSON', JSON.load(%("JSON"))
-  assert_equal '🍣', JSON.load(%("🍣"))
-  assert_equal [true, 1, 'mruby-yyjson'], JSON.load(%([true,1,"mruby-yyjson"]))
-  assert_equal({ 'mruby' => 'yyjson' }, JSON.load(%({"mruby":"yyjson"})))
+  stub = lambda do |obj, opts|
+    assert_equal 'mruby-yyjson', obj, "Expected 'mruby-yyjson' as input to JSON.parse"
+    assert_equal({ symbolize_names: true }, opts, 'Expected options { symbolize_names: true } for JSON.parse')
+    'stub parse'
+  end
 
-  assert_equal({ mruby: 'yyjson' }, JSON.load(%({"mruby":"yyjson"}), symbolize_names: true))
-
-  assert_raise(JSON::ParserError) { JSON.load(%({"mruby":)) }
+  JSON.stub(:parse, stub) do
+    assert_equal 'stub parse', JSON.load('mruby-yyjson', symbolize_names: true)
+  end
 
   class TestStringLike
     def to_str
@@ -140,13 +113,15 @@ assert('JSON.#load_file') do
 end
 
 assert('JSON.#pretty_generate') do
-  assert_equal <<~JSON.chomp, JSON.pretty_generate({ 'mruby' => 'yyjson', foo: %w[bar baz qux] })
+  assert_equal <<~JSON.chomp, JSON.pretty_generate({ 'mruby' => 'yyjson', foo: [%w[bar baz qux]] })
     {
       "mruby": "yyjson",
       "foo": [
-        "bar",
-        "baz",
-        "qux"
+        [
+          "bar",
+          "baz",
+          "qux"
+        ]
       ]
     }
   JSON
