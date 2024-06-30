@@ -32,20 +32,46 @@ assert('JSON.#dump') do
 end
 
 assert('JSON.#generate') do
-  class StubGenerator
-    def generate(obj)
-      assert_equal 'mruby-yyjson', obj, "Expected 'mruby-yyjson' as input to StubGenerator#generate"
-      'stub generate'
-    end
+  assert_equal 'null', JSON.generate(nil), 'nil'
+  assert_equal 'false', JSON.generate(false), 'false'
+  assert_equal 'true', JSON.generate(true), 'true'
+  assert_equal '100', JSON.generate(100), 'Integer'
+  assert_equal '-100', JSON.generate(-100), 'Integer'
+  assert_equal '0.1', JSON.generate(0.1), 'Float'
+  assert_raise(JSON::GeneratorError, 'Float::NAN') { JSON.generate(Float::NAN) }
+  assert_raise(JSON::GeneratorError, 'Float::INFINITY') { JSON.generate(Float::INFINITY) }
+  assert_equal %("mruby-yyjson"), JSON.generate('mruby-yyjson'), 'String'
+  assert_equal %("JSON"), JSON.generate(:JSON), 'Symbol'
+  assert_equal %("JSON"), JSON.generate(JSON), 'Class'
+  assert_equal %("🍣"), JSON.generate('🍣'), 'Emoji'
+  assert_equal %([true,1,"mruby-yyjson"]), JSON.generate([true, 1, 'mruby-yyjson']), 'Array'
+
+  def nesting_array(count)
+    return [] if count == 0
+
+    [nesting_array(count - 1)]
   end
 
-  stub = lambda do |opts|
-    assert_equal({ max_nesting: 19 }, opts, 'Expected options { max_nesting: 19 } for JSON::Generator.new')
-    StubGenerator.new
+  # default max_nesting is 19
+  assert_raise(JSON::NestingError, 'NestingError for deeply nested array') do
+    JSON.generate(nesting_array(20))
   end
 
-  JSON::Generator.stub(:new, stub) do
-    assert_equal 'stub generate', JSON.generate('mruby-yyjson', max_nesting: 19)
+  # 0 is unlimited
+  assert_nothing_raised('No error for max_nesting: 0 with deeply nested array') do
+    JSON.generate(nesting_array(100), max_nesting: 0)
+  end
+
+  assert_raise(JSON::NestingError, 'NestingError for max_nesting: 9 with 10 levels of nesting') do
+    JSON.generate(nesting_array(10), max_nesting: 9)
+  end
+
+  assert_raise(ArgumentError, 'ArgumentError for max_nesting: -1') do
+    JSON.generate(nesting_array(10), max_nesting: -1)
+  end
+
+  assert_raise(TypeError, 'TypeError for max_nesting: true') do
+    JSON.generate(nesting_array(10), max_nesting: true)
   end
 end
 
@@ -125,6 +151,26 @@ assert('JSON.#pretty_generate') do
       ]
     }
   JSON
+end
+
+assert('JSON.#colorize') do
+  # 各色に対するテストケース
+  assert_equal "\e[30mmruby-yyjson\e[m", JSON.colorize('mruby-yyjson', :black), 'Colorize with :black'
+  assert_equal "\e[31mmruby-yyjson\e[m", JSON.colorize('mruby-yyjson', :red), 'Colorize with :red'
+  assert_equal "\e[32mmruby-yyjson\e[m", JSON.colorize('mruby-yyjson', :green), 'Colorize with :green'
+  assert_equal "\e[33mmruby-yyjson\e[m", JSON.colorize('mruby-yyjson', :yellow), 'Colorize with :yellow'
+  assert_equal "\e[34mmruby-yyjson\e[m", JSON.colorize('mruby-yyjson', :blue), 'Colorize with :blue'
+  assert_equal "\e[35mmruby-yyjson\e[m", JSON.colorize('mruby-yyjson', :magenta), 'Colorize with :magenta'
+  assert_equal "\e[36mmruby-yyjson\e[m", JSON.colorize('mruby-yyjson', :cyan), 'Colorize with :cyan'
+  assert_equal "\e[37mmruby-yyjson\e[m", JSON.colorize('mruby-yyjson', :white), 'Colorize with :white'
+  assert_equal "\e[90mmruby-yyjson\e[m", JSON.colorize('mruby-yyjson', :gray), 'Colorize with :gray'
+
+  # 無効な色が指定された場合
+  assert_raise(TypeError, 'Raise TypeError for unknown color') { JSON.colorize('mruby-yyjson', :unknown) }
+
+  # 特定の入力文字列に対するテスト
+  assert_equal "\e[32mHello, World!\e[m", JSON.colorize('Hello, World!', :green), 'Colorize specific string with :green'
+  assert_equal "\e[90mTest String\e[m", JSON.colorize('Test String', :gray), 'Colorize specific string with :gray'
 end
 
 assert('JSON.#colorize_generate') do

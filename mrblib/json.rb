@@ -1,4 +1,5 @@
 module JSON
+  class GeneratorError < StandardError; end
   class NestingError < StandardError; end
   class ParserError < StandardError; end
 
@@ -20,18 +21,6 @@ module JSON
     io
   end
 
-  def self.generate(obj, opts = {})
-    JSON::Generator.new(opts).generate(obj)
-  end
-
-  def self.pretty_generate(obj)
-    generate(obj, pretty_print: true)
-  end
-
-  def self.colorize_generate(obj)
-    generate(obj, pretty_print: true, colorize: true)
-  end
-
   def self.fast_generate(obj)
     generate(obj)
   end
@@ -50,5 +39,48 @@ module JSON
     def self.load_file(filename, opts = {})
       JSON.parse(File.read(filename), opts)
     end
+  end
+
+  ANSI_COLORS = {
+    black: 30,
+    red: 31,
+    green: 32,
+    yellow: 33,
+    blue: 34,
+    magenta: 35,
+    cyan: 36,
+    white: 37,
+    gray: 90
+  }.freeze
+
+  def self.color_object_key
+    @color_object_key ||= :blue
+  end
+
+  def self.color_object_key=(color)
+    @color_object_key = color
+  end
+
+  def self.color_string
+    @color_string ||= :green
+  end
+
+  def self.color_string=(color)
+    @color_string = color
+  end
+
+  def self.color_null
+    @color_null ||= :gray
+  end
+
+  def self.color_null=(color)
+    @color_null = color
+  end
+
+  def self.colorize(str, color)
+    color_code = ANSI_COLORS[color.to_sym]
+    raise TypeError, "unknown color: #{color}" unless color_code
+
+    "\e[#{color_code}m#{str}\e[m"
   end
 end
