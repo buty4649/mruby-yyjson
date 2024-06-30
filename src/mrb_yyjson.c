@@ -79,7 +79,6 @@ yyjson_mut_val *mrb_value_to_json_value(mrb_state *mrb, mrb_value obj, yyjson_mu
     }
 
     yyjson_mut_val *result;
-    mrb_int len;
     switch (mrb_type(obj))
     {
     case MRB_TT_TRUE:
@@ -92,6 +91,7 @@ yyjson_mut_val *mrb_value_to_json_value(mrb_state *mrb, mrb_value obj, yyjson_mu
         result = yyjson_mut_raw(doc, mrb_obj_to_s_to_cstr(mrb, obj));
         break;
     case MRB_TT_FLOAT:
+    {
         mrb_float f = mrb_float(obj);
         if (isnan(f))
         {
@@ -105,6 +105,7 @@ yyjson_mut_val *mrb_value_to_json_value(mrb_state *mrb, mrb_value obj, yyjson_mu
         }
         result = yyjson_mut_raw(doc, mrb_obj_to_s_to_cstr(mrb, obj));
         break;
+    }
     case MRB_TT_STRING:
         result = yyjson_mut_str(doc, mrb_str_to_cstr(mrb, obj));
         if (ctx->flg & GENERATOR_FLAG_COLOR)
@@ -122,8 +123,9 @@ yyjson_mut_val *mrb_value_to_json_value(mrb_state *mrb, mrb_value obj, yyjson_mu
         break;
 
     case MRB_TT_ARRAY:
+    {
         result = yyjson_mut_arr(doc);
-        len = RARRAY_LEN(obj);
+        mrb_int len = RARRAY_LEN(obj);
         for (mrb_int i = 0; i < len; i++)
         {
             mrb_value v = mrb_ary_ref(mrb, obj, i);
@@ -137,11 +139,13 @@ yyjson_mut_val *mrb_value_to_json_value(mrb_state *mrb, mrb_value obj, yyjson_mu
             yyjson_mut_arr_append(result, item);
         }
         break;
+    }
 
     case MRB_TT_HASH:
+    {
         result = yyjson_mut_obj(doc);
         mrb_value keys = mrb_hash_keys(mrb, obj);
-        len = RARRAY_LEN(keys);
+        mrb_int len = RARRAY_LEN(keys);
         for (mrb_int i = 0; i < len; i++)
         {
             mrb_value key = mrb_ary_ref(mrb, keys, i);
@@ -179,6 +183,7 @@ yyjson_mut_val *mrb_value_to_json_value(mrb_state *mrb, mrb_value obj, yyjson_mu
             unsafe_yyjson_mut_obj_add(result, k, v, unsafe_yyjson_get_len(result));
         }
         break;
+    }
 
     default:
         result = mrb_value_to_json_value(mrb, mrb_obj_to_s(mrb, obj), doc, ctx);
@@ -228,7 +233,8 @@ mrb_value mrb_value_to_json_string(mrb_state *mrb, mrb_value self, generator_fla
     };
     yyjson_mut_doc *doc = yyjson_mut_doc_new(&alc);
     yyjson_mut_val *root = mrb_value_to_json_value(mrb, obj, doc, &ctx);
-    if (root == NULL) {
+    if (root == NULL)
+    {
         yyjson_mut_doc_free(doc);
         mrb_exc_raise(mrb, mrb_obj_value(ctx.exc));
     }
