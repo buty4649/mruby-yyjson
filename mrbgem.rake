@@ -10,5 +10,5 @@ MRuby::Gem::Specification.new('mruby-yyjson') do |spec|
   spec.add_test_dependency 'mruby-io', core: 'mruby-io'
   spec.add_test_dependency 'mruby-test-stub', github: 'buty4649/mruby-test-stub', branch: 'main'
 
-  spec.cc.defines += %w[YYJSON_DISABLE_WRITER YYJSON_DISABLE_UTILS]
+  spec.cc.defines += %w[YYJSON_DISABLE_UTILS]
 end

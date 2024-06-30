@@ -9072,12 +9072,13 @@ val_begin:
         goto val_end;
     }
     if (val_type == YYJSON_TYPE_RAW) {
+        is_key = ((u8)ctn_obj & (u8)~ctn_len);
         str_len = unsafe_yyjson_get_len(val);
         str_ptr = (const u8 *)unsafe_yyjson_get_str(val);
         check_str_len(str_len);
         incr_len(str_len + 2);
         cur = write_raw(cur, str_ptr, str_len);
-        *cur++ = ',';
+        *cur++ = is_key ? ':' : ',';
         goto val_end;
     }
     goto fail_type;
@@ -9282,13 +9283,16 @@ val_begin:
         goto val_end;
     }
     if (val_type == YYJSON_TYPE_RAW) {
+        is_key = (bool)((u8)ctn_obj & (u8)~ctn_len);
+        no_indent = (bool)((u8)ctn_obj & (u8)ctn_len);
         str_len = unsafe_yyjson_get_len(val);
         str_ptr = (const u8 *)unsafe_yyjson_get_str(val);
         check_str_len(str_len);
-        incr_len(str_len + 3);
+        incr_len(str_len + 3 + (no_indent ? 0 : level * 4));
+        cur = write_indent(cur, no_indent ? 0 : level, spaces);
         cur = write_raw(cur, str_ptr, str_len);
-        *cur++ = ',';
-        *cur++ = '\n';
+        *cur++ = is_key ? ':' : ',';
+        *cur++ = is_key ? ' ' : '\n';
         goto val_end;
     }
     goto fail_type;

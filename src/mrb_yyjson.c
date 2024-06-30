@@ -6,15 +6,14 @@
 #include <mruby/presym.h>
 #include "yyjson.h"
 
-typedef uint8_t parse_opts;
-#define PARSE_OPTS_NONE 0
-#define PARSE_OPTS_SYMBOLIZE_NAMES 1
-
+#define mrb_json_module() mrb_obj_value(mrb_module_get_id(mrb, MRB_SYM(JSON)))
 #define mrb_yyjson_error(x) mrb_class_get_under_id(mrb, mrb_module_get_id(mrb, MRB_SYM(JSON)), MRB_SYM(x))
+#define E_GENERATOR_ERROR mrb_yyjson_error(GeneratorError)
 #define E_NESTING_ERROR mrb_yyjson_error(NestingError)
 #define E_PARSER_ERROR mrb_yyjson_error(ParserError)
 
 #define mrb_obj_to_s(mrb, obj) mrb_funcall(mrb, obj, "to_s", 0)
+#define mrb_obj_to_s_to_cstr(mrb, obj) mrb_str_to_cstr(mrb, mrb_funcall(mrb, obj, "to_s", 0))
 
 struct RException *mrb_yyjson_exc(mrb_state *mrb, struct RClass *exc, const char *fmt, ...)
 {
@@ -25,6 +24,250 @@ struct RException *mrb_yyjson_exc(mrb_state *mrb, struct RClass *exc, const char
 
     return mrb_exc_ptr(mrb_exc_new_str(mrb, exc, msg));
 }
+
+typedef uint32_t generator_flag;
+#define GENERATOR_DEFAULT_MAX_NESTING 19
+#define GENERATOR_FLAG_NONE 0
+#define GENERATOR_FLAG_PRETTY (1 << 6) // = YYSON_WRITE_PRETTY_TWO_SPACES
+#define GENERATOR_FLAG_COLOR (1 << 8)
+
+static void *yyjson_mrb_malloc(void *ctx, size_t size)
+{
+    return mrb_malloc((mrb_state *)ctx, size);
+}
+
+static void *yyjson_mrb_realloc(void *ctx, void *ptr, size_t old_size, size_t size)
+{
+    return mrb_realloc((mrb_state *)ctx, ptr, size);
+}
+
+static void yyjson_mrb_free(void *ctx, void *ptr)
+{
+    mrb_free((mrb_state *)ctx, ptr);
+}
+
+typedef struct mrb_yyjson_generator_context
+{
+    generator_flag flg;
+    yyjson_alc *alc;
+    int depth;
+    int max_nesting;
+    struct RException *exc;
+} mrb_yyjson_generator_context;
+
+#define mrb_colorize_cstr(mrb, str, type) mrb_str_to_cstr(mrb,                                            \
+                                                          mrb_funcall(                                    \
+                                                              mrb, mrb_json_module(), "colorize", 2, str, \
+                                                              mrb_funcall(                                \
+                                                                  mrb, mrb_json_module(), "color_" type, 0)))
+
+yyjson_mut_val *mrb_value_to_json_value(mrb_state *mrb, mrb_value obj, yyjson_mut_doc *doc, mrb_yyjson_generator_context *ctx)
+{
+    if (ctx->max_nesting > 0 && ctx->depth > ctx->max_nesting)
+    {
+        ctx->exc = mrb_yyjson_exc(mrb, E_NESTING_ERROR, "nesting of %d is too deep", ctx->depth);
+        return NULL;
+    }
+
+    if (mrb_nil_p(obj))
+    {
+        if (ctx->flg & GENERATOR_FLAG_COLOR)
+        {
+            return yyjson_mut_raw(doc, mrb_colorize_cstr(mrb, mrb_str_new_lit(mrb, "null"), "null"));
+        }
+        return yyjson_mut_null(doc);
+    }
+
+    yyjson_mut_val *result;
+    mrb_int len;
+    switch (mrb_type(obj))
+    {
+    case MRB_TT_TRUE:
+        result = yyjson_mut_bool(doc, true);
+        break;
+    case MRB_TT_FALSE:
+        result = yyjson_mut_bool(doc, false);
+        break;
+    case MRB_TT_INTEGER:
+        result = yyjson_mut_raw(doc, mrb_obj_to_s_to_cstr(mrb, obj));
+        break;
+    case MRB_TT_FLOAT:
+        mrb_float f = mrb_float(obj);
+        if (isnan(f))
+        {
+            ctx->exc = mrb_yyjson_exc(mrb, E_GENERATOR_ERROR, "NaN is not a valid number in JSON");
+            return NULL;
+        }
+        else if (isinf(f))
+        {
+            ctx->exc = mrb_yyjson_exc(mrb, E_GENERATOR_ERROR, "Infinity is not a valid number in JSON");
+            return NULL;
+        }
+        result = yyjson_mut_raw(doc, mrb_obj_to_s_to_cstr(mrb, obj));
+        break;
+    case MRB_TT_STRING:
+        result = yyjson_mut_str(doc, mrb_str_to_cstr(mrb, obj));
+        if (ctx->flg & GENERATOR_FLAG_COLOR)
+        {
+            yyjson_write_err err;
+            char *json = yyjson_mut_val_write_opts(result, YYJSON_WRITE_NOFLAG, ctx->alc, NULL, &err);
+            if (json == NULL)
+            {
+                ctx->exc = mrb_yyjson_exc(mrb, E_GENERATOR_ERROR, "failed to generate JSON: %s", err.msg);
+                return NULL;
+            }
+            result = yyjson_mut_raw(doc, mrb_colorize_cstr(mrb, mrb_str_new_cstr(mrb, json), "string"));
+            yyjson_mrb_free(mrb, json);
+        }
+        break;
+
+    case MRB_TT_ARRAY:
+        result = yyjson_mut_arr(doc);
+        len = RARRAY_LEN(obj);
+        for (mrb_int i = 0; i < len; i++)
+        {
+            mrb_value v = mrb_ary_ref(mrb, obj, i);
+            ctx->depth++;
+            yyjson_mut_val *item = mrb_value_to_json_value(mrb, v, doc, ctx);
+            ctx->depth--;
+            if (item == NULL)
+            {
+                return NULL;
+            }
+            yyjson_mut_arr_append(result, item);
+        }
+        break;
+
+    case MRB_TT_HASH:
+        result = yyjson_mut_obj(doc);
+        mrb_value keys = mrb_hash_keys(mrb, obj);
+        len = RARRAY_LEN(keys);
+        for (mrb_int i = 0; i < len; i++)
+        {
+            mrb_value key = mrb_ary_ref(mrb, keys, i);
+            mrb_value value = mrb_hash_get(mrb, obj, key);
+
+            ctx->depth++;
+            generator_flag old_flag = ctx->flg;
+            ctx->flg &= ~GENERATOR_FLAG_COLOR;
+            yyjson_mut_val *k = mrb_value_to_json_value(mrb, mrb_obj_to_s(mrb, key), doc, ctx);
+            ctx->flg = old_flag;
+            if (k == NULL)
+            {
+                ctx->depth--;
+                return NULL;
+            }
+            if (ctx->flg & GENERATOR_FLAG_COLOR)
+            {
+                yyjson_write_err err;
+                char *json_k = yyjson_mut_val_write_opts(k, YYJSON_WRITE_NOFLAG, ctx->alc, NULL, &err);
+                if (json_k == NULL)
+                {
+                    ctx->exc = mrb_yyjson_exc(mrb, E_GENERATOR_ERROR, "failed to generate JSON: %s", err.msg);
+                    return NULL;
+                }
+                k = yyjson_mut_raw(doc, mrb_colorize_cstr(mrb, mrb_str_new_cstr(mrb, json_k), "object_key"));
+                yyjson_mrb_free(mrb, json_k);
+            }
+
+            yyjson_mut_val *v = mrb_value_to_json_value(mrb, value, doc, ctx);
+            ctx->depth--;
+            if (v == NULL)
+            {
+                return NULL;
+            }
+            unsafe_yyjson_mut_obj_add(result, k, v, unsafe_yyjson_get_len(result));
+        }
+        break;
+
+    default:
+        result = mrb_value_to_json_value(mrb, mrb_obj_to_s(mrb, obj), doc, ctx);
+    }
+
+    return result;
+}
+
+mrb_value mrb_value_to_json_string(mrb_state *mrb, mrb_value self, generator_flag flg)
+{
+    mrb_value obj;
+    mrb_value opts = mrb_nil_value();
+    mrb_yyjson_generator_context ctx = {
+        .flg = flg,
+        .depth = 0,
+        .max_nesting = GENERATOR_DEFAULT_MAX_NESTING,
+        .exc = NULL,
+    };
+
+    mrb_get_args(mrb, "o|H", &obj, &opts);
+
+    if (mrb_hash_p(opts) && mrb_hash_size(mrb, opts) > 0)
+    {
+        mrb_value max_nesting = mrb_hash_get(mrb, opts, mrb_symbol_value(mrb_intern_cstr(mrb, "max_nesting")));
+        if (mrb_test(max_nesting))
+        {
+            if (mrb_fixnum_p(max_nesting))
+            {
+                ctx.max_nesting = mrb_fixnum(max_nesting);
+                if (ctx.max_nesting < 0)
+                {
+                    mrb_raise(mrb, E_ARGUMENT_ERROR, "max_nesting must be greater than or equal to 0");
+                }
+            }
+            else
+            {
+                mrb_raise(mrb, E_TYPE_ERROR, "max_nesting must be a Fixnum");
+            }
+        }
+    }
+
+    yyjson_alc alc = {
+        .malloc = yyjson_mrb_malloc,
+        .realloc = yyjson_mrb_realloc,
+        .free = yyjson_mrb_free,
+        .ctx = (void *)mrb,
+    };
+    yyjson_mut_doc *doc = yyjson_mut_doc_new(&alc);
+    yyjson_mut_val *root = mrb_value_to_json_value(mrb, obj, doc, &ctx);
+    if (root == NULL) {
+        yyjson_mut_doc_free(doc);
+        mrb_exc_raise(mrb, mrb_obj_value(ctx.exc));
+    }
+    yyjson_mut_doc_set_root(doc, root);
+
+    yyjson_write_err err;
+    yyjson_write_flag write_flag = (flg & GENERATOR_FLAG_PRETTY) ? YYJSON_WRITE_PRETTY_TWO_SPACES : YYJSON_WRITE_NOFLAG;
+    char *json = yyjson_mut_write_opts(doc, write_flag, &alc, NULL, &err);
+    if (json == NULL)
+    {
+        yyjson_mut_doc_free(doc);
+        mrb_raisef(mrb, E_NESTING_ERROR, "failed to generate JSON: %s", err.msg);
+    }
+
+    mrb_value result = mrb_str_new_cstr(mrb, json);
+    yyjson_mrb_free(mrb, json);
+    yyjson_mut_doc_free(doc);
+
+    return result;
+}
+
+mrb_value mrb_yyjson_generate(mrb_state *mrb, mrb_value self)
+{
+    return mrb_value_to_json_string(mrb, self, GENERATOR_FLAG_NONE);
+}
+
+mrb_value mrb_yyjson_pretty_generate(mrb_state *mrb, mrb_value self)
+{
+    return mrb_value_to_json_string(mrb, self, GENERATOR_FLAG_PRETTY);
+}
+
+mrb_value mrb_yyjson_colorize_generate(mrb_state *mrb, mrb_value self)
+{
+    return mrb_value_to_json_string(mrb, self, GENERATOR_FLAG_PRETTY | GENERATOR_FLAG_COLOR);
+}
+
+typedef uint8_t parse_opts;
+#define PARSE_OPTS_NONE 0
+#define PARSE_OPTS_SYMBOLIZE_NAMES 1
 
 mrb_value mrb_json_value_to_mrb_value(mrb_state *mrb, yyjson_val *val, parse_opts opts)
 {
@@ -120,6 +363,9 @@ mrb_value mrb_yyjson_parse(mrb_state *mrb, mrb_value self)
 void mrb_mruby_yyjson_gem_init(mrb_state *mrb)
 {
     struct RClass *json_mod = mrb_define_module_id(mrb, MRB_SYM(JSON));
+    mrb_define_module_function_id(mrb, json_mod, MRB_SYM(generate), mrb_yyjson_generate, MRB_ARGS_REQ(1) | MRB_ARGS_OPT(1));
+    mrb_define_module_function_id(mrb, json_mod, MRB_SYM(pretty_generate), mrb_yyjson_pretty_generate, MRB_ARGS_REQ(1) | MRB_ARGS_OPT(1));
+    mrb_define_module_function_id(mrb, json_mod, MRB_SYM(colorize_generate), mrb_yyjson_colorize_generate, MRB_ARGS_REQ(1) | MRB_ARGS_OPT(1));
     mrb_define_module_function_id(mrb, json_mod, MRB_SYM(parse), mrb_yyjson_parse, MRB_ARGS_REQ(1) | MRB_ARGS_OPT(1));
 }
 
