@@ -73,6 +73,21 @@ assert('JSON.#generate') do
   assert_raise(TypeError, 'TypeError for max_nesting: true') do
     JSON.generate(nesting_array(10), max_nesting: true)
   end
+
+  assert_equal "\e[32m\"mruby-yyjson\"\e[m", JSON.generate('mruby-yyjson', colorize: :green), 'Colorize with :green'
+  got = JSON.generate({ 'mruby' => 'yyjson', foo: [%w[bar baz qux]] }, pretty_print: true)
+  assert_equal <<~JSON.chomp, got, 'Pretty print'
+    {
+      "mruby": "yyjson",
+      "foo": [
+        [
+          "bar",
+          "baz",
+          "qux"
+        ]
+      ]
+    }
+  JSON
 end
 
 assert('JSON.#parse') do
@@ -154,7 +169,6 @@ assert('JSON.#pretty_generate') do
 end
 
 assert('JSON.#colorize') do
-  # 各色に対するテストケース
   assert_equal "\e[30mmruby-yyjson\e[m", JSON.colorize('mruby-yyjson', :black), 'Colorize with :black'
   assert_equal "\e[31mmruby-yyjson\e[m", JSON.colorize('mruby-yyjson', :red), 'Colorize with :red'
   assert_equal "\e[32mmruby-yyjson\e[m", JSON.colorize('mruby-yyjson', :green), 'Colorize with :green'
@@ -165,10 +179,8 @@ assert('JSON.#colorize') do
   assert_equal "\e[37mmruby-yyjson\e[m", JSON.colorize('mruby-yyjson', :white), 'Colorize with :white'
   assert_equal "\e[90mmruby-yyjson\e[m", JSON.colorize('mruby-yyjson', :gray), 'Colorize with :gray'
 
-  # 無効な色が指定された場合
   assert_raise(TypeError, 'Raise TypeError for unknown color') { JSON.colorize('mruby-yyjson', :unknown) }
 
-  # 特定の入力文字列に対するテスト
   assert_equal "\e[32mHello, World!\e[m", JSON.colorize('Hello, World!', :green), 'Colorize specific string with :green'
   assert_equal "\e[90mTest String\e[m", JSON.colorize('Test String', :gray), 'Colorize specific string with :gray'
 end

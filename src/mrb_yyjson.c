@@ -192,38 +192,56 @@ yyjson_mut_val *mrb_value_to_json_value(mrb_state *mrb, mrb_value obj, yyjson_mu
     return result;
 }
 
-mrb_value mrb_value_to_json_string(mrb_state *mrb, mrb_value self, generator_flag flg)
+void parse_generator_opts(mrb_state *mrb, mrb_value opts, mrb_yyjson_generator_context *ctx)
+{
+    if (!mrb_hash_p(opts))
+    {
+        return;
+    }
+
+    mrb_value max_nesting = mrb_hash_get(mrb, opts, mrb_symbol_value(mrb_intern_cstr(mrb, "max_nesting")));
+    if (mrb_test(max_nesting))
+    {
+        if (mrb_fixnum_p(max_nesting))
+        {
+            ctx->max_nesting = mrb_fixnum(max_nesting);
+            if (ctx->max_nesting < 0)
+            {
+                mrb_raise(mrb, E_ARGUMENT_ERROR, "max_nesting must be greater than or equal to 0");
+            }
+        }
+        else
+        {
+            mrb_raise(mrb, E_TYPE_ERROR, "max_nesting must be a Fixnum");
+        }
+    }
+
+    mrb_value pritty_print = mrb_hash_get(mrb, opts, mrb_symbol_value(mrb_intern_cstr(mrb, "pretty_print")));
+    if (mrb_test(pritty_print))
+    {
+        ctx->flg |= GENERATOR_FLAG_PRETTY;
+    }
+
+    mrb_value colorize = mrb_hash_get(mrb, opts, mrb_symbol_value(mrb_intern_cstr(mrb, "colorize")));
+    if (mrb_test(colorize))
+    {
+        ctx->flg |= GENERATOR_FLAG_COLOR;
+    }
+}
+
+mrb_value mrb_value_to_json_string(mrb_state *mrb, generator_flag default_flg)
 {
     mrb_value obj;
     mrb_value opts = mrb_nil_value();
     mrb_yyjson_generator_context ctx = {
-        .flg = flg,
+        .flg = default_flg,
         .depth = 0,
         .max_nesting = GENERATOR_DEFAULT_MAX_NESTING,
         .exc = NULL,
     };
 
     mrb_get_args(mrb, "o|H", &obj, &opts);
-
-    if (mrb_hash_p(opts) && mrb_hash_size(mrb, opts) > 0)
-    {
-        mrb_value max_nesting = mrb_hash_get(mrb, opts, mrb_symbol_value(mrb_intern_cstr(mrb, "max_nesting")));
-        if (mrb_test(max_nesting))
-        {
-            if (mrb_fixnum_p(max_nesting))
-            {
-                ctx.max_nesting = mrb_fixnum(max_nesting);
-                if (ctx.max_nesting < 0)
-                {
-                    mrb_raise(mrb, E_ARGUMENT_ERROR, "max_nesting must be greater than or equal to 0");
-                }
-            }
-            else
-            {
-                mrb_raise(mrb, E_TYPE_ERROR, "max_nesting must be a Fixnum");
-            }
-        }
-    }
+    parse_generator_opts(mrb, opts, &ctx);
 
     yyjson_alc alc = {
         .malloc = yyjson_mrb_malloc,
@@ -241,7 +259,7 @@ mrb_value mrb_value_to_json_string(mrb_state *mrb, mrb_value self, generator_fla
     yyjson_mut_doc_set_root(doc, root);
 
     yyjson_write_err err;
-    yyjson_write_flag write_flag = (flg & GENERATOR_FLAG_PRETTY) ? YYJSON_WRITE_PRETTY_TWO_SPACES : YYJSON_WRITE_NOFLAG;
+    yyjson_write_flag write_flag = (ctx.flg & GENERATOR_FLAG_PRETTY) ? YYJSON_WRITE_PRETTY_TWO_SPACES : YYJSON_WRITE_NOFLAG;
     char *json = yyjson_mut_write_opts(doc, write_flag, &alc, NULL, &err);
     if (json == NULL)
     {
@@ -258,17 +276,17 @@ mrb_value mrb_value_to_json_string(mrb_state *mrb, mrb_value self, generator_fla
 
 mrb_value mrb_yyjson_generate(mrb_state *mrb, mrb_value self)
 {
-    return mrb_value_to_json_string(mrb, self, GENERATOR_FLAG_NONE);
+    return mrb_value_to_json_string(mrb, GENERATOR_FLAG_NONE);
 }
 
 mrb_value mrb_yyjson_pretty_generate(mrb_state *mrb, mrb_value self)
 {
-    return mrb_value_to_json_string(mrb, self, GENERATOR_FLAG_PRETTY);
+    return mrb_value_to_json_string(mrb, GENERATOR_FLAG_PRETTY);
 }
 
 mrb_value mrb_yyjson_colorize_generate(mrb_state *mrb, mrb_value self)
 {
-    return mrb_value_to_json_string(mrb, self, GENERATOR_FLAG_PRETTY | GENERATOR_FLAG_COLOR);
+    return mrb_value_to_json_string(mrb, GENERATOR_FLAG_PRETTY | GENERATOR_FLAG_COLOR);
 }
 
 typedef uint8_t parse_opts;
