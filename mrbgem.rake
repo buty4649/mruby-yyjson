@@ -3,7 +3,7 @@ MRuby::Gem::Specification.new('mruby-yyjson') do |spec|
   spec.authors = 'buty4649@gmail.com'
   spec.summary = 'yyjson bindings for mruby'
   spec.description = 'yyjson bindings for mruby'
-  spec.version = '1.4.0'
+  spec.version = '1.5.0'
 
   spec.add_dependency 'mruby-string-ext', core: 'mruby-string-ext'
 
