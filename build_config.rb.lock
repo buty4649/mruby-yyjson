@@ -10,3 +10,8 @@ builds:
       branch: main
       commit: c89130b3131daa4e98048528ab5aaee3cc870ab3
       version: 1.0.0
+    https://github.com/buty4649/mruby-terminal-color.git:
+      url: https://github.com/buty4649/mruby-terminal-color.git
+      branch: main
+      commit: 2ee7d972b4f4fb59a9390be5ed30152e4e0fc05b
+      version: 1.0.0

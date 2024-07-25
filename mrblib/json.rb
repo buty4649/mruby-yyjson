@@ -41,18 +41,6 @@ module JSON
     end
   end
 
-  ANSI_COLORS = {
-    black: 30,
-    red: 31,
-    green: 32,
-    yellow: 33,
-    blue: 34,
-    magenta: 35,
-    cyan: 36,
-    white: 37,
-    gray: 90
-  }.freeze
-
   def self.color_object_key
     @color_object_key ||= :blue
   end
@@ -75,12 +63,5 @@ module JSON
 
   def self.color_null=(color)
     @color_null = color
-  end
-
-  def self.colorize(str, color)
-    color_code = ANSI_COLORS[color.to_sym]
-    raise TypeError, "unknown color: #{color}" unless color_code
-
-    "\e[#{color_code}m#{str}\e[m"
   end
 end
