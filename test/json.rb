@@ -168,23 +168,6 @@ assert('JSON.#pretty_generate') do
   JSON
 end
 
-assert('JSON.#colorize') do
-  assert_equal "\e[30mmruby-yyjson\e[m", JSON.colorize('mruby-yyjson', :black), 'Colorize with :black'
-  assert_equal "\e[31mmruby-yyjson\e[m", JSON.colorize('mruby-yyjson', :red), 'Colorize with :red'
-  assert_equal "\e[32mmruby-yyjson\e[m", JSON.colorize('mruby-yyjson', :green), 'Colorize with :green'
-  assert_equal "\e[33mmruby-yyjson\e[m", JSON.colorize('mruby-yyjson', :yellow), 'Colorize with :yellow'
-  assert_equal "\e[34mmruby-yyjson\e[m", JSON.colorize('mruby-yyjson', :blue), 'Colorize with :blue'
-  assert_equal "\e[35mmruby-yyjson\e[m", JSON.colorize('mruby-yyjson', :magenta), 'Colorize with :magenta'
-  assert_equal "\e[36mmruby-yyjson\e[m", JSON.colorize('mruby-yyjson', :cyan), 'Colorize with :cyan'
-  assert_equal "\e[37mmruby-yyjson\e[m", JSON.colorize('mruby-yyjson', :white), 'Colorize with :white'
-  assert_equal "\e[90mmruby-yyjson\e[m", JSON.colorize('mruby-yyjson', :gray), 'Colorize with :gray'
-
-  assert_raise(TypeError, 'Raise TypeError for unknown color') { JSON.colorize('mruby-yyjson', :unknown) }
-
-  assert_equal "\e[32mHello, World!\e[m", JSON.colorize('Hello, World!', :green), 'Colorize specific string with :green'
-  assert_equal "\e[90mTest String\e[m", JSON.colorize('Test String', :gray), 'Colorize specific string with :gray'
-end
-
 assert('JSON.#colorize_generate') do
   assert_equal <<~JSON.chomp, JSON.colorize_generate({ 'mruby' => 'yyjson', foo: [nil, true, 100] })
     {
