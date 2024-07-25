@@ -1,8 +1,8 @@
 diff --git a/src/yyjson.c b/src/yyjson.c
-index 4202d8a..04d6397 100644
+index 16ecbac..5319821 100644
 --- a/src/yyjson.c
 +++ b/src/yyjson.c
-@@ -9072,12 +9072,13 @@ val_begin:
+@@ -9167,12 +9167,13 @@ val_begin:
          goto val_end;
      }
      if (val_type == YYJSON_TYPE_RAW) {
@@ -17,7 +17,7 @@ index 4202d8a..04d6397 100644
          goto val_end;
      }
      goto fail_type;
-@@ -9282,13 +9283,16 @@ val_begin:
+@@ -9377,13 +9378,16 @@ val_begin:
          goto val_end;
      }
      if (val_type == YYJSON_TYPE_RAW) {
