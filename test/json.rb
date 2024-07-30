@@ -78,6 +78,8 @@ assert('JSON.#generate') do
     assert_equal "\e[90mnull\e[m", JSON.generate(nil, colorize: true), 'null'
     assert_equal "\e[33mtrue\e[m", JSON.generate(true, colorize: true), 'true'
     assert_equal "\e[33mfalse\e[m", JSON.generate(false, colorize: true), 'false'
+    assert_equal "100", JSON.generate(100, colorize: true), 'Integer'
+    assert_equal "0.1", JSON.generate(0.1, colorize: true), 'Float'
     assert_equal "\e[32m\"mruby-yyjson\"\e[m", JSON.generate('mruby-yyjson', colorize: true), 'string'
 
     got = JSON.generate({ 'level1' => { 'level2' => { 'level3' => { 'level4' => { 'level5' => 'mruby-yyson' } } } } },
@@ -106,6 +108,12 @@ assert('JSON.#generate') do
     assert_equal "\e[31mtrue\e[m", JSON.generate(true, colorize: true), 'true with color_boolean'
     assert_equal "\e[31mfalse\e[m", JSON.generate(false, colorize: true), 'false with color_boolean'
     JSON.color_boolean = old_color_boolean
+
+    old_color_number = JSON.color_number
+    JSON.color_number = :blue
+    assert_equal "\e[34m100\e[m", JSON.generate(100, colorize: true), 'Integer with color_number'
+    assert_equal "\e[34m0.1\e[m", JSON.generate(0.1, colorize: true), 'Float with color_number'
+    JSON.color_number = old_color_number
 
     old_color_string = JSON.color_string
     JSON.color_string = :yellow

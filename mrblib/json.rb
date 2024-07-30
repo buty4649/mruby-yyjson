@@ -78,4 +78,8 @@ module JSON
   def self.color_boolean=(color)
     @color_boolean = color
   end
+
+  class << self
+    attr_accessor :color_number
+  end
 end

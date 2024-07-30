@@ -104,8 +104,16 @@ yyjson_mut_val *mrb_value_to_json_value(mrb_state *mrb, mrb_value obj, yyjson_mu
         }
         break;
     case MRB_TT_INTEGER:
-        result = yyjson_mut_raw(doc, mrb_obj_to_s_to_cstr(mrb, obj));
+    {
+        mrb_value n = mrb_obj_to_s(mrb, obj);
+        if (ctx->flg & GENERATOR_FLAG_COLOR)
+        {
+            mrb_value color_number = mrb_funcall_id(mrb, mrb_json_module(), MRB_SYM(color_number), 0);
+            n = mrb_str_set_color(mrb, n, color_number, mrb_nil_value(), mrb_nil_value());
+        }
+        result = yyjson_mut_raw(doc, RSTRING_PTR(n));
         break;
+    }
     case MRB_TT_FLOAT:
     {
         mrb_float f = mrb_float(obj);
@@ -119,7 +127,14 @@ yyjson_mut_val *mrb_value_to_json_value(mrb_state *mrb, mrb_value obj, yyjson_mu
             ctx->exc = mrb_yyjson_exc(mrb, E_GENERATOR_ERROR, "Infinity is not a valid number in JSON");
             return NULL;
         }
-        result = yyjson_mut_raw(doc, mrb_obj_to_s_to_cstr(mrb, obj));
+
+        mrb_value number = mrb_obj_to_s(mrb, obj);
+        if (ctx->flg & GENERATOR_FLAG_COLOR)
+        {
+            mrb_value color_number = mrb_funcall_id(mrb, mrb_json_module(), MRB_SYM(color_number), 0);
+            number = mrb_str_set_color(mrb, number, color_number, mrb_nil_value(), mrb_nil_value());
+        }
+        result = yyjson_mut_raw(doc, RSTRING_PTR(number));
         break;
     }
     case MRB_TT_STRING:
