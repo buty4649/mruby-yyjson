@@ -41,6 +41,35 @@ end
 ||||
 | Object#to_json          | ✓            |                                  |
 
+## Colorize
+
+![](./images/colorize_output.png)
+
+The `mruby-yyjson` library now supports colorized JSON output, making it easier to read and debug complex JSON structures. By setting the `colorize` option to `true` in the `JSON.color_generate` or `JSON.generate` methods, you can achieve syntax-highlighted JSON output. This feature enhances the readability of nested JSON data by differentiating keys, strings, numbers, booleans, and other elements with distinct colors.
+
+### Default Colors
+
+- `null`: gray
+- `boolean`: yellow
+- `number`: default (no specific color)
+- `Object keys`: Colors vary by hierarchy level
+  - Level 1: blue
+  - Level 2: cyan
+  - Level 3: magenta
+  - Level 4: red
+  - Levels 5 and beyond: cycle through blue, cyan, magenta, and red again
+
+### Customizing Colors
+
+You can customize these colors using the following methods:
+
+- `JSON.color_null`: Sets the color for `null` values
+- `JSON.color_boolean`: Sets the color for `boolean` values
+- `JSON.color_number`: Sets the color for `number` values
+- `JSON.set_color_object_key(level, color)`: Sets the color for object keys at a specific hierarchy level
+
+Refer to [mruby-terminal-color](https://github.com/buty4649/mruby-terminal-color) for details on specifying colors.
+
 ## License
 
 mruby-yyjson is licensed under the MIT License.

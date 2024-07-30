@@ -41,12 +41,18 @@ module JSON
     end
   end
 
-  def self.color_object_key
-    @color_object_key ||= :blue
+  @color_object_key = %i[blue cyan magenta red]
+
+  def self.color_object_key(level)
+    raise ArgumentError, "level must be greater than or equal to 1, but got #{level}" unless level >= 1
+
+    @color_object_key[(level - 1) % @color_object_key.size]
   end
 
-  def self.color_object_key=(color)
-    @color_object_key = color
+  def self.set_color_object_key(level, color)
+    raise ArgumentError, "level must be between 1 and 4, but got #{level}" unless level >= 1 && level <= 4
+
+    @color_object_key[level - 1] = color
   end
 
   def self.color_string
@@ -63,5 +69,17 @@ module JSON
 
   def self.color_null=(color)
     @color_null = color
+  end
+
+  def self.color_boolean
+    @color_boolean ||= :yellow
+  end
+
+  def self.color_boolean=(color)
+    @color_boolean = color
+  end
+
+  class << self
+    attr_accessor :color_number
   end
 end
