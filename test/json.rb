@@ -78,8 +78,8 @@ assert('JSON.#generate') do
     assert_equal "\e[90mnull\e[m", JSON.generate(nil, colorize: true), 'null'
     assert_equal "\e[33mtrue\e[m", JSON.generate(true, colorize: true), 'true'
     assert_equal "\e[33mfalse\e[m", JSON.generate(false, colorize: true), 'false'
-    assert_equal "100", JSON.generate(100, colorize: true), 'Integer'
-    assert_equal "0.1", JSON.generate(0.1, colorize: true), 'Float'
+    assert_equal '100', JSON.generate(100, colorize: true), 'Integer'
+    assert_equal '0.1', JSON.generate(0.1, colorize: true), 'Float'
     assert_equal "\e[32m\"mruby-yyjson\"\e[m", JSON.generate('mruby-yyjson', colorize: true), 'string'
 
     got = JSON.generate({ 'level1' => { 'level2' => { 'level3' => { 'level4' => { 'level5' => 'mruby-yyson' } } } } },
