@@ -70,4 +70,12 @@ module JSON
   def self.color_null=(color)
     @color_null = color
   end
+
+  def self.color_boolean
+    @color_boolean ||= :yellow
+  end
+
+  def self.color_boolean=(color)
+    @color_boolean = color
+  end
 end

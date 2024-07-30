@@ -76,6 +76,8 @@ assert('JSON.#generate') do
 
   assert('Colorize') do
     assert_equal "\e[90mnull\e[m", JSON.generate(nil, colorize: true), 'null'
+    assert_equal "\e[33mtrue\e[m", JSON.generate(true, colorize: true), 'true'
+    assert_equal "\e[33mfalse\e[m", JSON.generate(false, colorize: true), 'false'
     assert_equal "\e[32m\"mruby-yyjson\"\e[m", JSON.generate('mruby-yyjson', colorize: true), 'string'
 
     got = JSON.generate({ 'level1' => { 'level2' => { 'level3' => { 'level4' => { 'level5' => 'mruby-yyson' } } } } },
@@ -98,6 +100,12 @@ assert('JSON.#generate') do
     JSON.color_null = :yellow
     assert_equal "\e[33mnull\e[m", JSON.generate(nil, colorize: true), 'null with color_null'
     JSON.color_null = old_color_null
+
+    old_color_boolean = JSON.color_boolean
+    JSON.color_boolean = :red
+    assert_equal "\e[31mtrue\e[m", JSON.generate(true, colorize: true), 'true with color_boolean'
+    assert_equal "\e[31mfalse\e[m", JSON.generate(false, colorize: true), 'false with color_boolean'
+    JSON.color_boolean = old_color_boolean
 
     old_color_string = JSON.color_string
     JSON.color_string = :yellow
@@ -227,7 +235,7 @@ assert('JSON.#colorize_generate') do
       \e[34m"mruby"\e[m: \e[32m"yyjson"\e[m,
       \e[34m"foo"\e[m: [
         \e[90mnull\e[m,
-        true,
+        \e[33mtrue\e[m,
         100
       ]
     }

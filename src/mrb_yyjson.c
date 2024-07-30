@@ -80,10 +80,28 @@ yyjson_mut_val *mrb_value_to_json_value(mrb_state *mrb, mrb_value obj, yyjson_mu
     switch (mrb_type(obj))
     {
     case MRB_TT_TRUE:
-        result = yyjson_mut_bool(doc, true);
+        if (ctx->flg & GENERATOR_FLAG_COLOR)
+        {
+            mrb_value color_boolean = mrb_funcall_id(mrb, mrb_json_module(), MRB_SYM(color_boolean), 0);
+            mrb_value c = mrb_str_set_color(mrb, mrb_str_new_lit(mrb, "true"), color_boolean, mrb_nil_value(), mrb_nil_value());
+            result = yyjson_mut_raw(doc, RSTRING_PTR(c));
+        }
+        else
+        {
+            result = yyjson_mut_bool(doc, true);
+        }
         break;
     case MRB_TT_FALSE:
-        result = yyjson_mut_bool(doc, false);
+        if (ctx->flg & GENERATOR_FLAG_COLOR)
+        {
+            mrb_value color_boolean = mrb_funcall_id(mrb, mrb_json_module(), MRB_SYM(color_boolean), 0);
+            mrb_value c = mrb_str_set_color(mrb, mrb_str_new_lit(mrb, "false"), color_boolean, mrb_nil_value(), mrb_nil_value());
+            result = yyjson_mut_raw(doc, RSTRING_PTR(c));
+        }
+        else
+        {
+            result = yyjson_mut_bool(doc, false);
+        }
         break;
     case MRB_TT_INTEGER:
         result = yyjson_mut_raw(doc, mrb_obj_to_s_to_cstr(mrb, obj));
