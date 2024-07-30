@@ -6,7 +6,7 @@
 #include <mruby/variable.h>
 #include <mruby/presym.h>
 #include "yyjson.h"
-#include "mrb_terminal_color.h"
+#include "terminal_color.h"
 
 #define mrb_json_module() mrb_obj_value(mrb_module_get_id(mrb, MRB_SYM(JSON)))
 #define mrb_yyjson_error(x) mrb_class_get_under_id(mrb, mrb_module_get_id(mrb, MRB_SYM(JSON)), MRB_SYM(x))
@@ -170,8 +170,9 @@ yyjson_mut_val *mrb_value_to_json_value(mrb_state *mrb, mrb_value obj, yyjson_mu
                     ctx->exc = mrb_yyjson_exc(mrb, E_GENERATOR_ERROR, "failed to generate JSON: %s", err.msg);
                     return NULL;
                 }
-                mrb_value color_object_key = mrb_funcall_id(mrb, mrb_json_module(), MRB_SYM(color_object_key), 0);
+                mrb_value color_object_key = mrb_funcall_id(mrb, mrb_json_module(), MRB_SYM(color_object_key), 1, mrb_int_value(mrb, ctx->depth));
                 mrb_value c = mrb_str_set_color(mrb, mrb_str_new_cstr(mrb, json_k), color_object_key, mrb_nil_value(), mrb_nil_value());
+
                 k = yyjson_mut_raw(doc, RSTRING_PTR(c));
                 yyjson_mrb_free(mrb, json_k);
             }

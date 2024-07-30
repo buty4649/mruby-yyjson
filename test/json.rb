@@ -74,7 +74,60 @@ assert('JSON.#generate') do
     JSON.generate(nesting_array(10), max_nesting: true)
   end
 
-  assert_equal "\e[32m\"mruby-yyjson\"\e[m", JSON.generate('mruby-yyjson', colorize: :green), 'Colorize with :green'
+  assert('Colorize') do
+    assert_equal "\e[90mnull\e[m", JSON.generate(nil, colorize: true), 'null'
+    assert_equal "\e[32m\"mruby-yyjson\"\e[m", JSON.generate('mruby-yyjson', colorize: true), 'string'
+
+    got = JSON.generate({ 'level1' => { 'level2' => { 'level3' => { 'level4' => { 'level5' => 'mruby-yyson' } } } } },
+                        colorize: true)
+    assert_equal <<~JSON.delete("\n "), got, 'Hash'
+      {
+        \e[34m\"level1\"\e[m:{
+          \e[36m\"level2\"\e[m:{
+            \e[35m\"level3\"\e[m:{
+              \e[31m\"level4\"\e[m:{
+                \e[34m\"level5\"\e[m:\e[32m\"mruby-yyson\"\e[m
+              }
+            }
+          }
+        }
+      }
+    JSON
+
+    old_color_null = JSON.color_null
+    JSON.color_null = :yellow
+    assert_equal "\e[33mnull\e[m", JSON.generate(nil, colorize: true), 'null with color_null'
+    JSON.color_null = old_color_null
+
+    old_color_string = JSON.color_string
+    JSON.color_string = :yellow
+    assert_equal "\e[33m\"mruby-yyjson\"\e[m", JSON.generate('mruby-yyjson', colorize: true), 'string with color_string'
+    JSON.color_string = old_color_string
+
+    old_color_object_key = []
+    4.times { |i| old_color_object_key << JSON.color_object_key(i + 1) }
+    JSON.set_color_object_key(1, :red)
+    JSON.set_color_object_key(2, :green)
+    JSON.set_color_object_key(3, :blue)
+    JSON.set_color_object_key(4, :cyan)
+    got = JSON.generate({ 'level1' => { 'level2' => { 'level3' => { 'level4' => { 'level5' => 'mruby-yyson' } } } } },
+                        colorize: true)
+    assert_equal <<~JSON.delete("\n "), got, 'Hash'
+      {
+        \e[31m\"level1\"\e[m:{
+          \e[32m\"level2\"\e[m:{
+            \e[34m\"level3\"\e[m:{
+              \e[36m\"level4\"\e[m:{
+                \e[31m\"level5\"\e[m:\e[32m\"mruby-yyson\"\e[m
+              }
+            }
+          }
+        }
+      }
+    JSON
+    4.times { |i| JSON.set_color_object_key(i + 1, old_color_object_key[i]) }
+  end
+
   got = JSON.generate({ 'mruby' => 'yyjson', foo: [%w[bar baz qux]] }, pretty_print: true)
   assert_equal <<~JSON.chomp, got, 'Pretty print'
     {
