@@ -1,8 +1,6 @@
-diff --git a/src/yyjson.c b/src/yyjson.c
-index 16ecbac..5319821 100644
---- a/src/yyjson.c
-+++ b/src/yyjson.c
-@@ -9167,12 +9167,13 @@ val_begin:
+--- a/src/yyjson.c	2025-08-19 03:44:14.000000000 +0900
++++ b/src/yyjson.c	2025-11-21 17:47:33.469731191 +0900
+@@ -9179,12 +9179,13 @@
          goto val_end;
      }
      if (val_type == YYJSON_TYPE_RAW) {
@@ -17,18 +15,51 @@ index 16ecbac..5319821 100644
          goto val_end;
      }
      goto fail_type;
-@@ -9377,13 +9378,16 @@ val_begin:
+@@ -9380,6 +9381,7 @@
          goto val_end;
      }
      if (val_type == YYJSON_TYPE_RAW) {
 +        is_key = (bool)((u8)ctn_obj & (u8)~ctn_len);
-+        no_indent = (bool)((u8)ctn_obj & (u8)ctn_len);
+         no_indent = (bool)((u8)ctn_obj & (u8)ctn_len);
+         str_len = unsafe_yyjson_get_len(val);
+         str_ptr = (const u8 *)unsafe_yyjson_get_str(val);
+@@ -9387,8 +9389,8 @@
+         incr_len(str_len + 3 + (no_indent ? 0 : level * 4));
+         cur = write_indent(cur, no_indent ? 0 : level, spaces);
+         cur = write_raw(cur, str_ptr, str_len);
+-        *cur++ = ',';
+-        *cur++ = '\n';
++        *cur++ = is_key ? ':' : ',';
++        *cur++ = is_key ? ' ' : '\n';
+         goto val_end;
+     }
+     goto fail_type;
+@@ -9736,12 +9738,13 @@
+         goto val_end;
+     }
+     if (val_type == YYJSON_TYPE_RAW) {
++        is_key = ((u8)ctn_obj & (u8)~ctn_len);
          str_len = unsafe_yyjson_get_len(val);
          str_ptr = (const u8 *)unsafe_yyjson_get_str(val);
          check_str_len(str_len);
--        incr_len(str_len + 3);
-+        incr_len(str_len + 3 + (no_indent ? 0 : level * 4));
-+        cur = write_indent(cur, no_indent ? 0 : level, spaces);
+         incr_len(str_len + 2);
+         cur = write_raw(cur, str_ptr, str_len);
+-        *cur++ = ',';
++        *cur++ = is_key ? ':' : ',';
+         goto val_end;
+     }
+     goto fail_type;
+@@ -9943,6 +9946,7 @@
+         goto val_end;
+     }
+     if (val_type == YYJSON_TYPE_RAW) {
++        is_key = ((u8)ctn_obj & (u8)~ctn_len);
+         no_indent = (bool)((u8)ctn_obj & (u8)ctn_len);
+         str_len = unsafe_yyjson_get_len(val);
+         str_ptr = (const u8 *)unsafe_yyjson_get_str(val);
+@@ -9950,8 +9954,8 @@
+         incr_len(str_len + 3 + (no_indent ? 0 : level * 4));
+         cur = write_indent(cur, no_indent ? 0 : level, spaces);
          cur = write_raw(cur, str_ptr, str_len);
 -        *cur++ = ',';
 -        *cur++ = '\n';
