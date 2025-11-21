@@ -2,7 +2,7 @@
 
 source 'https://rubygems.org'
 
-# gem "rails"
+ruby file: '.ruby-version'
 
 group 'development' do
   gem 'rubocop'

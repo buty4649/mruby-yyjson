@@ -7,8 +7,8 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: ruby/setup-ruby@v1
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - uses: ruby/setup-ruby@8aeb6ff8030dd539317f8e1769a044873b56ea71 # v1.268.0
       - name: Run RuboCop
         run: |
           bundle install
@@ -19,12 +19,13 @@ jobs:
     strategy:
       matrix:
         runs-on: [ubuntu-latest, macos-14, windows-latest]
+        mruby-version: [master, 3.4.0]
     runs-on: ${{ matrix.runs-on }}
+    env:
+      MRUBY_VERSION: ${{ matrix.mruby_version}}
     steps:
-      - uses: actions/checkout@v4
-      - uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: 3.3
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - uses: ruby/setup-ruby@8aeb6ff8030dd539317f8e1769a044873b56ea71 # v1.268.0
       - name: Run build and tests
         run: rake all test
 
@@ -33,3 +34,17 @@ jobs:
         run: |
           sudo apt-get update && sudo apt-get install -y valgrind
           rake test:memcheck
+
+  check:
+    runs-on: ubuntu-latest
+    needs: test
+    if: always()
+    steps:
+      - name: Check matrix results
+        run: |
+          if [ "${{ needs.test.result }}" != "success" ]; then
+            echo "Some matrix jobs failed"
+            exit 1
+          fi
+      - name: All test matrix jobs completed
+        run: echo "All test matrix jobs completed."
