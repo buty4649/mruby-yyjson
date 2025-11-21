@@ -8,7 +8,7 @@ permissions:
 jobs:
   dependabot:
     runs-on: ubuntu-latest
-    if: github.event.pull_request.user.login == 'dependabot[bot]' && github.repository == 'buty4649/mruby-tiny-optparse'
+    if: github.event.pull_request.user.login == 'dependabot[bot]' && github.repository == 'buty4649/mruby-yyjson'
     steps:
       - name: Dependabot metadata
         id: metadata
