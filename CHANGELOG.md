@@ -1,5 +1,12 @@
 # Changelog
 
+## [v1.8.1](https://github.com/buty4649/mruby-yyjson/compare/v1.8.0...v1.8.1) - 2025-12-08
+- ci(deps): bump actions/create-github-app-token from 2.1.4 to 2.2.0 by @dependabot[bot] in https://github.com/buty4649/mruby-yyjson/pull/37
+- ci(deps): bump ruby/setup-ruby from 1.268.0 to 1.269.0 by @dependabot[bot] in https://github.com/buty4649/mruby-yyjson/pull/38
+- ci(deps): bump actions/create-github-app-token from 2.2.0 to 2.2.1 by @dependabot[bot] in https://github.com/buty4649/mruby-yyjson/pull/39
+- ci(deps): bump actions/checkout from 6.0.0 to 6.0.1 by @dependabot[bot] in https://github.com/buty4649/mruby-yyjson/pull/40
+- Remove assignees by @buty4649 in https://github.com/buty4649/mruby-yyjson/pull/41
+
 ## [v1.8.0](https://github.com/buty4649/mruby-yyjson/compare/v1.7.0...v1.8.0) - 2025-11-21
 - Improve CI by @buty4649 in https://github.com/buty4649/mruby-yyjson/pull/30
 - Fix repo name by @buty4649 in https://github.com/buty4649/mruby-yyjson/pull/34
