@@ -22,7 +22,7 @@ jobs:
         mruby-version: [master, 3.4.0]
     runs-on: ${{ matrix.runs-on }}
     env:
-      MRUBY_VERSION: ${{ matrix.mruby_version}}
+      MRUBY_VERSION: ${{ matrix.mruby-version}}
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
       - uses: ruby/setup-ruby@80740b3b13bf9857e28854481ca95a84e78a2bdf # v1.284.0
