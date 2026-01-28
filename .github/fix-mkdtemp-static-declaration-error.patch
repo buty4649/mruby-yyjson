@@ -1,0 +1,20 @@
+--- mruby.org/mrbgems/mruby-io/test/mruby_io_test.c	2026-01-28 12:03:37.316399477 +0900
++++ mruby/mrbgems/mruby-io/test/mruby_io_test.c	2026-01-28 12:04:20.589920700 +0900
+@@ -38,6 +38,9 @@
+ }
+ #endif
+ 
++#if defined(_MSC_VER) || \
++    (defined(MRB_MINGW64_VERSION) && MRB_MINGW64_VERSION < 11000)
++
+ static char*
+ mkdtemp(char *temp)
+ {
+@@ -46,6 +49,7 @@
+   if (_mkdir(path) < 0) return NULL;
+   return path;
+ }
++#endif
+ 
+ #define umask(mode) _umask(mode)
+ #define rmdir(path) _rmdir(path)

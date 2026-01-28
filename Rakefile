@@ -31,6 +31,8 @@ else
   end
 end
 
+system("patch -p0 < #{File.join(__dir__, '.github', 'fix-mkdtemp-static-declaration-error.patch')}") if ENV['CI']
+
 ENV['MRUBY_CONFIG'] = ENV['MRUBY_CONFIG'] || File.join(__dir__, 'build_config.rb')
 ENV['MRUBY_BUILD_DIR'] = ENV['MRUBY_BUILD_DIR'] || File.join(__dir__, 'build')
 load File.join(mruby_dir, 'Rakefile')
