@@ -1,5 +1,39 @@
 # Changelog
 
+## [v1.8.2](https://github.com/buty4649/mruby-yyjson/compare/v1.8.1...v1.8.2) - 2026-04-15
+- ci(deps): bump ruby/setup-ruby from 1.276.0 to 1.278.0 by @dependabot[bot] in https://github.com/buty4649/mruby-yyjson/pull/49
+- ci(deps): bump dependabot/fetch-metadata from 2.4.0 to 2.5.0 by @dependabot[bot] in https://github.com/buty4649/mruby-yyjson/pull/50
+- ci(deps): bump Songmu/tagpr from 1.10.0 to 1.11.0 by @dependabot[bot] in https://github.com/buty4649/mruby-yyjson/pull/51
+- ci(deps): bump ruby/setup-ruby from 1.278.0 to 1.281.0 by @dependabot[bot] in https://github.com/buty4649/mruby-yyjson/pull/52
+- ci(deps): bump ruby/setup-ruby from 1.281.0 to 1.284.0 by @dependabot[bot] in https://github.com/buty4649/mruby-yyjson/pull/54
+- ci(deps): bump Songmu/tagpr from 1.11.0 to 1.11.1 by @dependabot[bot] in https://github.com/buty4649/mruby-yyjson/pull/53
+- Fix CI error by @buty4649 in https://github.com/buty4649/mruby-yyjson/pull/59
+- ci(deps): bump actions/checkout from 6.0.1 to 6.0.2 by @dependabot[bot] in https://github.com/buty4649/mruby-yyjson/pull/57
+- ci(deps): bump ruby/setup-ruby from 1.284.0 to 1.286.0 by @dependabot[bot] in https://github.com/buty4649/mruby-yyjson/pull/58
+- ci(deps): bump Songmu/tagpr from 1.11.1 to 1.12.1 by @dependabot[bot] in https://github.com/buty4649/mruby-yyjson/pull/56
+- deps(deps-dev): bump rubocop from 1.82.1 to 1.84.0 by @dependabot[bot] in https://github.com/buty4649/mruby-yyjson/pull/61
+- ci(deps): bump Songmu/tagpr from 1.12.1 to 1.15.0 by @dependabot[bot] in https://github.com/buty4649/mruby-yyjson/pull/62
+- ci(deps): bump ruby/setup-ruby from 1.286.0 to 1.287.0 by @dependabot[bot] in https://github.com/buty4649/mruby-yyjson/pull/60
+- ci(deps): bump ruby/setup-ruby from 1.287.0 to 1.288.0 by @dependabot[bot] in https://github.com/buty4649/mruby-yyjson/pull/63
+- deps(deps-dev): bump rubocop from 1.84.0 to 1.84.1 by @dependabot[bot] in https://github.com/buty4649/mruby-yyjson/pull/64
+- ci(deps): bump Songmu/tagpr from 1.15.0 to 1.17.0 by @dependabot[bot] in https://github.com/buty4649/mruby-yyjson/pull/65
+- deps(deps-dev): bump rubocop from 1.84.1 to 1.84.2 by @dependabot[bot] in https://github.com/buty4649/mruby-yyjson/pull/66
+- deps(deps-dev): bump rubocop from 1.84.2 to 1.85.0 by @dependabot[bot] in https://github.com/buty4649/mruby-yyjson/pull/68
+- ci(deps): bump Songmu/tagpr from 1.17.0 to 1.17.1 by @dependabot[bot] in https://github.com/buty4649/mruby-yyjson/pull/67
+- deps(deps-dev): bump rubocop from 1.85.0 to 1.85.1 by @dependabot[bot] in https://github.com/buty4649/mruby-yyjson/pull/70
+- ci(deps): bump ruby/setup-ruby from 1.288.0 to 1.290.0 by @dependabot[bot] in https://github.com/buty4649/mruby-yyjson/pull/69
+- ci(deps): bump ruby/setup-ruby from 1.290.0 to 1.293.0 by @dependabot[bot] in https://github.com/buty4649/mruby-yyjson/pull/71
+- ci(deps): bump ruby/setup-ruby from 1.293.0 to 1.295.0 by @dependabot[bot] in https://github.com/buty4649/mruby-yyjson/pull/73
+- ci(deps): bump actions/create-github-app-token from 2.2.1 to 3.0.0 by @dependabot[bot] in https://github.com/buty4649/mruby-yyjson/pull/72
+- deps(deps-dev): bump rubocop from 1.85.1 to 1.86.0 by @dependabot[bot] in https://github.com/buty4649/mruby-yyjson/pull/76
+- ci(deps): bump ruby/setup-ruby from 1.295.0 to 1.299.0 by @dependabot[bot] in https://github.com/buty4649/mruby-yyjson/pull/75
+- ci(deps): bump dependabot/fetch-metadata from 2.5.0 to 3.0.0 by @dependabot[bot] in https://github.com/buty4649/mruby-yyjson/pull/74
+- ci(deps): bump Songmu/tagpr from 1.17.1 to 1.18.1 by @dependabot[bot] in https://github.com/buty4649/mruby-yyjson/pull/77
+- ci(deps): bump actions/create-github-app-token from 3.0.0 to 3.1.1 by @dependabot[bot] in https://github.com/buty4649/mruby-yyjson/pull/78
+- ci(deps): bump ruby/setup-ruby from 1.299.0 to 1.301.0 by @dependabot[bot] in https://github.com/buty4649/mruby-yyjson/pull/81
+- deps(deps-dev): bump rubocop from 1.86.0 to 1.86.1 by @dependabot[bot] in https://github.com/buty4649/mruby-yyjson/pull/80
+- ci(deps): bump Songmu/tagpr from 1.18.1 to 1.18.2 by @dependabot[bot] in https://github.com/buty4649/mruby-yyjson/pull/79
+
 ## [v1.8.1](https://github.com/buty4649/mruby-yyjson/compare/v1.8.0...v1.8.1) - 2025-12-08
 - ci(deps): bump actions/create-github-app-token from 2.1.4 to 2.2.0 by @dependabot[bot] in https://github.com/buty4649/mruby-yyjson/pull/37
 - ci(deps): bump ruby/setup-ruby from 1.268.0 to 1.269.0 by @dependabot[bot] in https://github.com/buty4649/mruby-yyjson/pull/38
